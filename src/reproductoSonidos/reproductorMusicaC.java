@@ -51,7 +51,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 	private JTextField resultado;
 	private JTextField tiempo;
 	private JTextField txtHistorico;
-	public boolean  vueltaRegreso=false;
+	private boolean  repeticion=false;
 
 	/**
 	 * Launch the application.
@@ -85,10 +85,10 @@ public class reproductorMusicaC extends javafx.application.Application{
 		JButton reanudar  = new JButton("\u25BA");
 		JButton pausa = new JButton("||");
 		JSlider sliderProgreso = new JSlider();
-		sliderProgreso.setValue(1);
+		sliderProgreso.setValue(0);
 		sliderProgreso.setMaximum(1000);
 		
-		mus = new ReproductorMusica("Ficheros/mus1.mp3");
+		mus = null/*new ReproductorMusica("Ficheros/mus1.mp3")*/;
 		
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
                 "Archivos de Musica(.mp3, .wav)", "mp3", "wav");
@@ -102,13 +102,14 @@ public class reproductorMusicaC extends javafx.application.Application{
 		frame.setIconImage(img.getImage());*/
 		
 		JLabel tituloReproductorJ = new JLabel("Reproductor musica Java");
+		tituloReproductorJ.setFocusable(false);
 		tituloReproductorJ.setHorizontalAlignment(SwingConstants.CENTER);
 		tituloReproductorJ.setForeground(Color.ORANGE);
 		tituloReproductorJ.setFont(new Font("Tahoma", Font.PLAIN, 18));
 		tituloReproductorJ.setBounds(10, 11, 562, 22);
 		frame.getContentPane().add(tituloReproductorJ);
 		
-		resultado = new JTextField(primerVezTitulo(mus.getNombreCancion()));
+		resultado = new JTextField(primerVezTitulo("Esperando archivo..."));
 		resultado.setBackground(new Color(102, 0, 255));
 		resultado.setForeground(Color.MAGENTA);
 		resultado.setFont(new Font("Tahoma", Font.BOLD, 13));
@@ -164,7 +165,9 @@ public class reproductorMusicaC extends javafx.application.Application{
 		sliderVol.setOrientation(SwingConstants.VERTICAL);
 		sliderVol.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
+				if(mus!=null) {
 				mus.ajustarVolumen(sliderVol.getValue());
+				}
 			}
 		});
 		sliderVol.setBounds(548, 76, 24, 162);
@@ -205,12 +208,13 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		
-		//Para que cuando se arrastre el boton sobre el slider ajuste el progreso de la cancion
+		//Para que cuando se arrastre el raton sobre el slider ajuste el progreso de la cancion
 				sliderProgreso.addMouseMotionListener(new MouseMotionAdapter() {
 					@Override
 					public void mouseDragged(MouseEvent arg0) {
-						mus.ajustarTiempo(sliderProgreso.getValue());
-						
+						if(mus!=null) {
+							mus.ajustarTiempo(sliderProgreso.getValue());
+						}
 					}
 				});
 		
@@ -221,7 +225,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 
 		JList historico = new JList() ;
 		JScrollPane desliz= new JScrollPane(historico);
-		desliz.setBounds(49, 141, 472, 95);
+		desliz.setBounds(49, 128, 472, 108);
 		//frame.getContentPane().add(historico);
 		frame.getContentPane().add(desliz);
 		
@@ -236,8 +240,20 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        chooser.setFileFilter(filter);
 		        int returnVal = chooser.showOpenDialog(null);
 		        if(returnVal == JFileChooser.APPROVE_OPTION) {
+		        	
+		        	if(mus!=null)  {
+		        		mus.getMediaPlayer().stop();
+		        		System.out.println("Elegiste abrir este archivo: " +
+		                chooser.getSelectedFile().getName());
+		        		mus.cambiarCancion(chooser.getSelectedFile().getAbsolutePath(),repeticion);
+		        		
+		        	}else {
+		        		mus = new ReproductorMusica(chooser.getSelectedFile().getAbsolutePath(), repeticion);
+		        		
+		        	}
 		        	HistoricoSonido d= new HistoricoSonido(mus.getPath(), mus.getNombreCancion());
 		        	histMus.add(d);
+		        	
 		        	
 		        	//Crear un objeto DefaultListModel
 		        	DefaultListModel listModel = new DefaultListModel();
@@ -253,18 +269,14 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        	
 		        	
 		        	
-		        	mus.getMediaPlayer().stop();
-		        	System.out.println("Elegiste abrir este archivo: " +
-		                    chooser.getSelectedFile().getName());
-		           
-		            mus.cambiarCancion(chooser.getSelectedFile().getAbsolutePath());
+		            
 		            mus.reproducirInicio();
 		            resultado.setText(primerVezTitulo(mus.getNombreCancion()));
 		            
 		            
 		            
 		        }else {
-		        	resultado.setText("Intentalo de nuevo");
+		        //	resultado.setText("Intentalo de nuevo");
 		        }
 		       
 		        
@@ -283,9 +295,11 @@ public class reproductorMusicaC extends javafx.application.Application{
 				if(mus!=null) {
 					if(mus.getSeVaRepetir()==false) {
 						mus.setRepeticion(true);
+						repeticion=true;
 						repeticionBoton.setBackground(new Color(102,255,51));
 					}else {
 						mus.setRepeticion(false);
+						repeticion=false;
 						repeticionBoton.setBackground(new Color(240,240,240));
 					}
 				}
@@ -297,6 +311,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		frame.getContentPane().add(repeticionBoton);
 		
 		txtHistorico = new JTextField("Historico");
+		txtHistorico.setFocusable(false);
 		txtHistorico.setMargin(new Insets(0, 0, 0, 0));
 		txtHistorico.setHorizontalAlignment(SwingConstants.CENTER);
 		txtHistorico.setForeground(new Color(250, 128, 114));
@@ -314,15 +329,16 @@ public class reproductorMusicaC extends javafx.application.Application{
 		{ 
 		    public void actionPerformed(ActionEvent e) 
 		    { 
-		    	
-		    	if(mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.PLAYING || mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.READY && mus.getMediaPlayer()!=null) {
-		            
-		    	sliderProgreso.setValue(mus.obtenerProgreso());
-            	//sliderProgreso.setValue(sliderProgreso.getValue());
-            	tiempo.setText(mus.getProgreso());
-            	try {
-            		mus.getMediaPlayer().play();
-            	}catch(Exception e1) {}
+		    	if(mus!=null) {
+			    	if(mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.PLAYING || mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.READY && mus.getMediaPlayer()!=null) {
+				    	sliderProgreso.setValue(mus.obtenerProgreso());
+				    	System.out.println(mus.obtenerProgreso()+"   "+sliderProgreso.getValue());
+		            	//sliderProgreso.setValue(sliderProgreso.getValue());
+		            	tiempo.setText(mus.getProgreso());
+		            	try {
+		            		mus.getMediaPlayer().play();
+		            	}catch(Exception e1) {}
+			    	}
 		    	}
 		     } 
 		}); 
@@ -356,7 +372,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		            // Double-click detected
 		            int index = list.locationToIndex(evt.getPoint());
 		            System.out.println("asfadf "+index);
-		            mus.cambiarCancion(histMus.get(index).getDireccion());
+		            mus.cambiarCancion(histMus.get(index).getDireccion(),repeticion);
 		            mus.reproducirInicio();
 		            resultado.setText(primerVezTitulo(mus.getNombreCancion()));
 		            
@@ -381,7 +397,9 @@ public class reproductorMusicaC extends javafx.application.Application{
 
 		
 	private String primerVezTitulo(String t) {
-		String espacios="                                                                                                                                   ";
+		//al cambiar una cancion o el primer mensaje quie aparece en el texto resultado es tratado por este metodo
+		//para poder hacer la marquesina en direccion derecha
+		String espacios="                                                                                                                            ";
 		t="\u200e"+t+"\u200f";
 		String pantalla= espacios.substring(0,(espacios.length()/2)-t.length())+t;
 		System.out.println(pantalla.length());
@@ -395,7 +413,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 	@Override
 	public void start(Stage arg0) throws Exception {
 		
-		mus.reproducirInicio();
+		//mus.reproducirInicio();
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {

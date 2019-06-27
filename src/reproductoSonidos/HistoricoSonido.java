@@ -24,5 +24,17 @@ public class HistoricoSonido {
 		
 	}
 	
+	public boolean equals(HistoricoSonido e) {
+		boolean iguales=false;
+		
+		if(e.getDireccion()==this.direccion)  {
+			iguales=true;
+		}
+		
+		
+		return iguales;
+		
+	}
+	
 	
 }

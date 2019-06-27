@@ -16,24 +16,39 @@ public class ReproductorMusica {
 	private boolean seVaRepetir=false;
 	//public JSlider  sliderprogreso;
 	
-	public ReproductorMusica(String direccion /*JSlider sliderprogreso*/) {
+	public ReproductorMusica(String direccion, boolean repe) {
 		this.path=direccion;
 		this.media = new Media(new File(this.path).toURI().toString());
         this.mediaPlayer = new MediaPlayer(media);
         this.mediaPlayer.setVolume(0.5);
+        //this.mediaPlayer.setRate(2.0);
+        
+        if(repe) {
+        	this.setRepeticion(true);
+        }else {
+        	this.setRepeticion(true);
+        }
 		
 	}
 	public String getPath() {
 		return this.path;
 	}
 	
-	public void cambiarCancion(String direccion) {
+	public void cambiarCancion(String direccion, boolean repe) {
 		this.mediaPlayer.stop();
+		this.mediaPlayer=null;
 		this.path=direccion;
 		this.media = new Media(new File(this.path).toURI().toString());
         this.mediaPlayer = new MediaPlayer(media);
         this.mediaPlayer.play();
         this.mediaPlayer.setVolume(0.5);
+        
+        if(repe) {
+        	this.setRepeticion(true);
+        }else {
+        	this.setRepeticion(true);
+        }
+		
 		
 	}
 	
@@ -114,15 +129,24 @@ public class ReproductorMusica {
 	}
 	
 	public int obtenerProgreso() {
-		int duracionActual= (int)this.mediaPlayer.getCurrentTime().toMillis();
-		int duracionTotal= (int)this.mediaPlayer.getTotalDuration().toMillis();
-		//System.out.println(duracionActual);
-		//System.out.println(duracionTotal);
+		int res=0;
 		
-		//duracionActual=duracionActual/1000;
-		int res=(int)(duracionActual*1000)/duracionTotal;
-		//System.out.println("prog"+res);
-		//this.mediaPlayer.pause();
+		if(this.mediaPlayer!=null) {
+			int duracionActual= (int)this.mediaPlayer.getCurrentTime().toMillis();
+			//int duracionTotal= (int)this.mediaPlayer.getTotalDuration().toMillis();
+			int duracionTotal= (int)this.mediaPlayer.getCycleDuration().toMillis();//duracion de esta cancion
+			
+			
+			
+			//System.out.println(duracionActual);
+			System.out.println(duracionTotal);
+			
+			//duracionActual=duracionActual/1000;
+			res=(int)(duracionActual*1000)/duracionTotal;
+			//System.out.println((duracionActual*1000)/duracionTotal);
+			//System.out.println("prog"+res);
+			//this.mediaPlayer.pause();
+		}
 		return res;
 	}
 	
@@ -132,7 +156,9 @@ public class ReproductorMusica {
 		
 	}
 	public void ajustarTiempo(int t) {
-		int duracionTotal= (int)this.mediaPlayer.getTotalDuration().toMillis();
+		//int duracionTotal= (int)this.mediaPlayer.getTotalDuration().toMillis();
+		int duracionTotal= (int)this.mediaPlayer.getCycleDuration().toMillis();
+		
 		
 		int duracionSeleccionada= (duracionTotal*t)/1000;
 		//System.out.println(duracionSeleccionada);
