@@ -20,8 +20,11 @@ public class ReproductorMusica {
 		this.path=direccion;
 		this.media = new Media(new File(this.path).toURI().toString());
         this.mediaPlayer = new MediaPlayer(media);
-       
+        this.mediaPlayer.setVolume(0.5);
 		
+	}
+	public String getPath() {
+		return this.path;
 	}
 	
 	public void cambiarCancion(String direccion) {
@@ -30,6 +33,7 @@ public class ReproductorMusica {
 		this.media = new Media(new File(this.path).toURI().toString());
         this.mediaPlayer = new MediaPlayer(media);
         this.mediaPlayer.play();
+        this.mediaPlayer.setVolume(0.5);
 		
 	}
 	
