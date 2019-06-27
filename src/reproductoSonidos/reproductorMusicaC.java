@@ -51,6 +51,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 	private JTextField resultado;
 	private JTextField tiempo;
 	private JTextField txtHistorico;
+	public boolean  vueltaRegreso=false;
 
 	/**
 	 * Launch the application.
@@ -78,6 +79,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 	 */
 
 	private void initialize() {
+		//boolean vueltaRegreso=false;
 		ArrayList<HistoricoSonido> histMus = new ArrayList<HistoricoSonido>();
 		JFileChooser chooser = new JFileChooser();
 		JButton reanudar  = new JButton("\u25BA");
@@ -106,11 +108,11 @@ public class reproductorMusicaC extends javafx.application.Application{
 		tituloReproductorJ.setBounds(10, 11, 562, 22);
 		frame.getContentPane().add(tituloReproductorJ);
 		
-		resultado = new JTextField("Elije una cancion");
+		resultado = new JTextField(primerVezTitulo(mus.getNombreCancion()));
 		resultado.setBackground(new Color(102, 0, 255));
 		resultado.setForeground(Color.MAGENTA);
 		resultado.setFont(new Font("Tahoma", Font.BOLD, 13));
-		resultado.setHorizontalAlignment(SwingConstants.CENTER);
+		resultado.setHorizontalAlignment(SwingConstants.LEFT);
 		resultado.setEditable(false);
 		resultado.setBounds(20, 44, 552, 22);
 		frame.getContentPane().add(resultado);
@@ -257,7 +259,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		           
 		            mus.cambiarCancion(chooser.getSelectedFile().getAbsolutePath());
 		            mus.reproducirInicio();
-		            resultado.setText(mus.getNombreCancion());
+		            resultado.setText(primerVezTitulo(mus.getNombreCancion()));
 		            
 		            
 		            
@@ -302,13 +304,13 @@ public class reproductorMusicaC extends javafx.application.Application{
 		txtHistorico.setEditable(false);
 		txtHistorico.setColumns(10);
 		txtHistorico.setBackground(Color.GRAY);
-		txtHistorico.setBounds(53, 108, 468, 18);
+		txtHistorico.setBounds(49, 108, 472, 18);
 		frame.getContentPane().add(txtHistorico);
 		
 		
 		
 		
-		Timer timer = new Timer (10, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
+		Timer tiempoYBarraProgreso = new Timer (20, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
 		{ 
 		    public void actionPerformed(ActionEvent e) 
 		    { 
@@ -326,7 +328,25 @@ public class reproductorMusicaC extends javafx.application.Application{
 		}); 
 		
 
-		timer.start();
+		tiempoYBarraProgreso.start();
+		
+		Timer efectoMarquesinaTituloCancion = new Timer (200, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
+				{ 
+					
+				    public void actionPerformed(ActionEvent e) 
+				    { 
+				    	String resultadoo=resultado.getText();
+				    	String p= resultadoo.substring(resultadoo.length()-1,resultadoo.length())+resultadoo.substring(0,resultadoo.length()-1);
+				    	resultado.setText(p);
+				    	
+				    	
+				    }
+				}); 
+				
+
+		efectoMarquesinaTituloCancion.start();
+		
+		
 		
 		historico.addMouseListener(new MouseAdapter() {
 		    public void mouseClicked(MouseEvent evt) {
@@ -338,7 +358,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		            System.out.println("asfadf "+index);
 		            mus.cambiarCancion(histMus.get(index).getDireccion());
 		            mus.reproducirInicio();
-		            resultado.setText(mus.getNombreCancion());
+		            resultado.setText(primerVezTitulo(mus.getNombreCancion()));
 		            
 		            
 		        } 
@@ -359,6 +379,19 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 	}
 
+		
+	private String primerVezTitulo(String t) {
+		String espacios="                                                                                                                                   ";
+		t="\u200e"+t+"\u200f";
+		String pantalla= espacios.substring(0,(espacios.length()/2)-t.length())+t;
+		System.out.println(pantalla.length());
+		
+		pantalla=pantalla+espacios.substring(0, espacios.length()-pantalla.length());
+		
+		System.out.println(pantalla.length());
+		System.out.println(espacios.length());
+		return pantalla;
+	}
 	@Override
 	public void start(Stage arg0) throws Exception {
 		
