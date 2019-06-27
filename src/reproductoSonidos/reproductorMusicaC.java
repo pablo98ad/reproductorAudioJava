@@ -1,7 +1,11 @@
 package reproductoSonidos;
 
 import javafx.application.Application;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -18,10 +22,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Time;
+
 import javax.swing.JSlider;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.event.ChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.awt.event.InputMethodListener;
+import java.awt.event.InputMethodEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseEvent;
 
 public class reproductorMusicaC extends javafx.application.Application{
 
@@ -34,7 +46,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 	 * Launch the application.
 	 */
 	public static void main(String[] args)  {
-		mus = new ReproductorMusica("Ficheros/mus1.mp3");
+		
 		Application.launch(args);
 	      
 		
@@ -54,10 +66,16 @@ public class reproductorMusicaC extends javafx.application.Application{
 	 * Initialize the contents of the frame.
 	 * @wbp.parser.entryPoint
 	 */
+
 	private void initialize() {
 		JFileChooser chooser = new JFileChooser();
 		JButton reanudar  = new JButton("\u25BA");
 		JButton pausa = new JButton("||");
+		JSlider sliderProgreso = new JSlider();
+		sliderProgreso.setValue(1);
+		sliderProgreso.setMaximum(1000);
+		
+		mus = new ReproductorMusica("Ficheros/mus1.mp3");
 		
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
                 "Archivos de Musica(.mp3, .wav)", "mp3", "wav");
@@ -103,7 +121,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		
-		
+		//BOTON PAUSA
 		pausa.setFont(new Font("Tahoma", Font.PLAIN, 10));
 		pausa.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -122,7 +140,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		reanudar.setVisible(false);
 		
 		
-		
+		//SLIDER AJUSTAR VOLUMEN
 		tiempo = new JTextField();
 		tiempo.setHorizontalAlignment(SwingConstants.CENTER);
 		tiempo.setBounds(244, 202, 52, 22);
@@ -139,15 +157,55 @@ public class reproductorMusicaC extends javafx.application.Application{
 		sliderVol.setBounds(259, 88, 24, 103);
 		frame.getContentPane().add(sliderVol);
 		
-		JSlider sliderProgreso = new JSlider();
-		sliderProgreso.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				mus.ajustarTiempo(sliderProgreso.getValue());
-			}
-		});
+		
+		
+		//si la cancion se esta reproduciendo
+		//PARA CADA CAMBIO  bps DE LA CANCION
+			/*
+		mus.getMediaPlayer().currentTimeProperty().addListener(new javafx.beans.value.ChangeListener<Duration>() {
+            @Override
+            public void changed(ObservableValue<? extends Duration> observable, Duration oldValue, Duration newValue) {
+            	if(mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.PLAYING || mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.READY && mus.getMediaPlayer()!=null) {
+	            	sliderProgreso.setValue(mus.obtenerProgreso());
+	            	//sliderProgreso.setValue(sliderProgreso.getValue());
+	            	tiempo.setText(mus.getProgreso());
+	            	try {
+	            		mus.getMediaPlayer().play();
+	            	}catch(Exception e) {}
+	            	System.out.println(sliderProgreso.getValue());
+	            	System.out.println(mus.obtenerProgreso());
+	            	System.out.println(mus.getProgreso());
+	            	System.out.println();
+            	}else {
+            		System.out.println("sdfsdfsdf");
+            	}
+            }
+		}
+            );
+		*/
+		
+			
+		
+		
+		
+		
+		
+		
+		
+		//Para que cuando se arrastre el boton sobre el slider ajuste el progreso de la cancion
+				sliderProgreso.addMouseMotionListener(new MouseMotionAdapter() {
+					@Override
+					public void mouseDragged(MouseEvent arg0) {
+						mus.ajustarTiempo(sliderProgreso.getValue());
+						
+					}
+				});
+		
 		sliderProgreso.setBounds(10, 202, 232, 22);
 		frame.getContentPane().add(sliderProgreso);
 		
+		
+		//BOTON ELEGIR CANCION
 		JButton eligeFileBoton = new JButton("Elegir Cancion...");
 		eligeFileBoton.setMargin(new Insets(0, 0, 0, 0));
 		eligeFileBoton.addActionListener(new ActionListener() {
@@ -157,11 +215,11 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        chooser.setFileFilter(filter);
 		        int returnVal = chooser.showOpenDialog(null);
 		        if(returnVal == JFileChooser.APPROVE_OPTION) {
-		        	mus.pausa();
+		        	mus.getMediaPlayer().stop();
 		        	System.out.println("Elegiste abrir este archivo: " +
 		                    chooser.getSelectedFile().getName());
 		           
-		            mus= new ReproductorMusica( chooser.getSelectedFile().getAbsolutePath());
+		            mus.cambiarCancion(chooser.getSelectedFile().getAbsolutePath());
 		            mus.reproducirInicio();
 		            resultado.setText(mus.getNombreCancion());
 		        }else {
@@ -176,14 +234,41 @@ public class reproductorMusicaC extends javafx.application.Application{
 		eligeFileBoton.setBounds(188, 55, 108, 22);
 		frame.getContentPane().add(eligeFileBoton);
 		
-		Timer timer = new Timer (100, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
+		
+		//BOTON REPETICION CANCION
+		JButton repeticionBoton = new JButton("\uD83D\uDD04");
+		repeticionBoton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(mus!=null) {
+					if(mus.getSeVaRepetir()==false) {
+						mus.setRepeticion(true);
+						repeticionBoton.setBackground(new Color(102,255,51));
+					}else {
+						mus.setRepeticion(false);
+						repeticionBoton.setBackground(new Color(240,240,240));
+					}
+				}
+				
+			}
+		});
+		repeticionBoton.setMargin(new Insets(0, 0, 0, 0));
+		repeticionBoton.setBounds(166, 161, 60, 30);
+		frame.getContentPane().add(repeticionBoton);
+		
+		Timer timer = new Timer (10, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
 		{ 
 		    public void actionPerformed(ActionEvent e) 
 		    { 
 		    	
-		    	tiempo.setText(mus.getProgreso());
-		       // System.out.println(mus.getProgreso());
-		        //slider_1.setValue((int) mus.obtenerProgreso());
+		    	if(mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.PLAYING || mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.READY && mus.getMediaPlayer()!=null) {
+		            
+		    	sliderProgreso.setValue(mus.obtenerProgreso());
+            	//sliderProgreso.setValue(sliderProgreso.getValue());
+            	tiempo.setText(mus.getProgreso());
+            	try {
+            		mus.getMediaPlayer().play();
+            	}catch(Exception e1) {}
+		    	}
 		     } 
 		}); 
 		
