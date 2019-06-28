@@ -1,4 +1,4 @@
-package reproductoSonidos;
+package reproductorSonidos;
 
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;

@@ -1,4 +1,4 @@
-package reproductoSonidos;
+package reproductorSonidos;
 
 public class HistoricoSonido {
 	private String direccion;

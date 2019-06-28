@@ -1,4 +1,4 @@
-package reproductoSonidos;
+package reproductorSonidos;
 
 import java.io.File;
 
