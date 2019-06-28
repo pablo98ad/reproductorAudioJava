@@ -43,6 +43,8 @@ import javax.swing.JScrollPane;
 
 import java.awt.List;
 import java.awt.ScrollPane;
+import java.awt.event.MouseWheelListener;
+import java.awt.event.MouseWheelEvent;
 
 public class reproductorMusicaC extends javafx.application.Application{
 
@@ -156,6 +158,8 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		//SLIDER AJUSTAR VOLUMEN
 		tiempo = new JTextField();
+		
+		tiempo.setFocusable(false);
 		tiempo.setHorizontalAlignment(SwingConstants.CENTER);
 		tiempo.setBounds(174, 268, 60, 30);
 		frame.getContentPane().add(tiempo);
@@ -163,6 +167,23 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		JSlider sliderVol = new JSlider();
 		sliderVol.setOrientation(SwingConstants.VERTICAL);
+		//lisenner para si movemos la ruleta cuando el raton entre por el slider ajustar el volumen
+		sliderVol.addMouseWheelListener(new MouseWheelListener() {
+		    @Override
+		    public void mouseWheelMoved(MouseWheelEvent e) {
+		        int direccion = e.getWheelRotation();
+		        if (direccion < 0) {
+		            //direccion arriba
+		            sliderVol.setValue(sliderVol.getValue() + 5);
+		        } else {
+		        	//direccion abajo
+		            sliderVol.setValue(sliderVol.getValue() - 5);
+		        }
+		    }
+		});
+		
+		
+		
 		sliderVol.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
 				if(mus!=null) {
@@ -253,7 +274,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        	}
 		        	HistoricoSonido d= new HistoricoSonido(mus.getPath(), mus.getNombreCancion());
 		        	histMus.add(d);
-		        	
+		        	sliderVol.setValue(50);//CAMBIAR, MUY INCOMODO
 		        	
 		        	//Crear un objeto DefaultListModel
 		        	DefaultListModel listModel = new DefaultListModel();
@@ -386,7 +407,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		
-		frame.setTitle("Reproductor Musica Java by Pablo98ad");
+		frame.setTitle("Reproductor Musica Java v1.0 by Pablo98ad");
 		try {
 			frame.setIconImage(ImageIO.read(new File("Ficheros/calc.png")));
 		} catch (IOException e1) {

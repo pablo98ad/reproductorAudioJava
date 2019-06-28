@@ -7,7 +7,6 @@ public class HistoricoSonido {
 	public HistoricoSonido(String d, String n) {
 		this.direccion=d;
 		this.nombre=n;
-		
 	}
 	
 	public String getDireccion() {
@@ -15,15 +14,12 @@ public class HistoricoSonido {
 	}
 	public String getNombre() {
 		return this.nombre;
-		
 	}
 	
 	@Override
 	public String toString() {
 		return this.nombre;
-		
 	}
-	
 	public boolean equals(HistoricoSonido e) {
 		boolean iguales=false;
 		
