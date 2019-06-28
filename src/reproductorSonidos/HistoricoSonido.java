@@ -1,5 +1,10 @@
 package reproductorSonidos;
 
+/**
+ * Clase javaBean que encapsula una direccion de un archivo y su nombre
+ * @author Pablo Avila pablo98ad
+ *
+ */
 public class HistoricoSonido {
 	private String direccion;
 	private String nombre;

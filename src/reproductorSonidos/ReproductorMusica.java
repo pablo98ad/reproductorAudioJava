@@ -2,26 +2,28 @@ package reproductorSonidos;
 
 import java.io.File;
 
-import javax.swing.JSlider;
-
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import javafx.scene.media.MediaPlayer.Status;
 import javafx.util.Duration;
 
+/**
+ * Clase que encapsula el controlador del archivo que se reproduce
+ * @author Pablo Avila pablo98ad
+ */
 public class ReproductorMusica {
 	private String path;
 	private Media media;
 	private MediaPlayer mediaPlayer;
 	private boolean seVaRepetir=false;
-	//public JSlider  sliderprogreso;
+
 	
-	public ReproductorMusica(String direccion, boolean repe) {
+	public ReproductorMusica(String direccion, int volumen, double velocidad, boolean repe) {
 		this.path=direccion;
 		this.media = new Media(new File(this.path).toURI().toString());
         this.mediaPlayer = new MediaPlayer(media);
-        this.mediaPlayer.setVolume(0.5);
-        //this.mediaPlayer.setRate(2.0);
+        this.ajustarVolumen(volumen);
+        this.mediaPlayer.setRate(velocidad);
+        
         
         if(repe) {
         	this.setRepeticion(true);
@@ -30,52 +32,56 @@ public class ReproductorMusica {
         }
 	}
 	
+	/**
+	 * Ajusta la velocidad de reproduccion de la cancion
+	 * @param v
+	 */
 	public void ajustarVelocidad(double v) {
 		this.mediaPlayer.setRate(v);
 		
 	}
 	
 	
-	
+	/**
+	 * Obtiene la ruta del archivo
+	 * @return
+	 */
 	public String getPath() {
 		return this.path;
 	}
 	
-	public void cambiarCancion(String direccion, boolean repe) {
+	/**
+	 * Metodo que cambia la reproduccion del archivo, cambia la fuente del mediaplayer
+	 * @param direccion direccion del archivo	
+	 * @param repe si se va a repetir la cancion
+	 */
+	public void cambiarCancion(String direccion, int volumen, double velocidad, boolean repe) {
 		this.mediaPlayer.stop();
 		this.mediaPlayer=null;
 		this.path=direccion;
 		this.media = new Media(new File(this.path).toURI().toString());
         this.mediaPlayer = new MediaPlayer(media);
         this.mediaPlayer.play();
-        this.mediaPlayer.setVolume(0.5);
+        this.ajustarVolumen(volumen);
+        this.mediaPlayer.setRate(velocidad);
         
         if(repe) {
         	this.setRepeticion(true);
         }else {
-        	this.setRepeticion(true);
+        	this.setRepeticion(false);
         }
 		
 		
 	}
 	
 	public void reproducirInicio() {
-        try {
-        	//Duration d = new Duration(100000.00);
-        	//this.mediaPlayer.setStartTime(d);
-      //  this.mediaPlayer.setAutoPlay(true);
         this.mediaPlayer.play();
-        
-        }catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
     }
 	
+	/**
+	 * Metodo que ajusta la repeticion del archivo	
+	 * @param siono
+	 */
 	public void setRepeticion(boolean siono) {
 		if(siono) {
 			 mediaPlayer.setAutoPlay(true);//para que cuando termine se siga reproduciendo
@@ -88,10 +94,19 @@ public class ReproductorMusica {
 		}
 		this.mediaPlayer.play();
 	}
+	/**
+	 * Metodo que devuelve si la repeticion del archivo esta activo
+	 * @return
+	 */
 	public boolean getSeVaRepetir() {
 		return this.seVaRepetir;
 	}
 	
+	/**
+	 * Metodo que devuelve el nombre del archivo, se consigue usando la funcionalidad de String 
+	 * lastindexof
+	 * @return
+	 */
 	public String getNombreCancion() {
 		String n= this.path.substring(this.path.lastIndexOf('\\')+1, this.path.lastIndexOf('.'));
 		//por ejempo "C:/Pablo/Escritorio/hola.mp3" cojeria solo "hola"
@@ -104,9 +119,10 @@ public class ReproductorMusica {
 	 * @return
 	 */
 	public String getProgreso() {
-		String time="";
-		double d =  this.mediaPlayer.getCurrentTime().toSeconds();
+		String time;
 		int min,seg;
+		double d =  this.mediaPlayer.getCurrentTime().toSeconds();
+		
 		min= (int) (d/60);
 		seg= (int) (d%60);
 		time=String.format("%d:%02d", min,seg);
@@ -134,6 +150,11 @@ public class ReproductorMusica {
 		
 	}
 	
+	/**
+	 * Obtiene de un valor de 0 a 1000 el progreso de la cancion, util para que se mueva el slider 
+	 * del progreso del tiempo
+	 * @return
+	 */
 	public int obtenerProgreso() {
 		int res=0;
 		
@@ -161,6 +182,10 @@ public class ReproductorMusica {
 		return this.mediaPlayer;
 		
 	}
+	/**
+	 * Metodo que ajusta el tiempo de la cancion, se utiliza para el slider del progreso del archivo
+	 * @param t
+	 */
 	public void ajustarTiempo(int t) {
 		//int duracionTotal= (int)this.mediaPlayer.getTotalDuration().toMillis();
 		int duracionTotal= (int)this.mediaPlayer.getCycleDuration().toMillis();

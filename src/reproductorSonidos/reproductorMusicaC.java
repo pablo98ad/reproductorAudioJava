@@ -33,6 +33,8 @@ import javax.swing.event.ChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.awt.event.InputMethodListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.InputMethodEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -50,21 +52,32 @@ import javax.swing.JComboBox;
 public class reproductorMusicaC extends javafx.application.Application{
 
 	private JFrame frame;
-	private static ReproductorMusica mus;
-	private JTextField resultado;
-	private JTextField tiempo;
-	private JTextField txtHistorico;
-	private boolean  repeticion=false;
-	private Color colorBotonRepe;
-
+	private JButton eligeFileBoton;//Boton que abre la ventana para elegir archivo
+	private JButton repeticionBoton;//Boton donde seleccionas si quieres que se reproduzca el archivo otra vez al terminar 
+	private JButton botonAtras;//Boton que reproduce la siguiente archivo en sentido contrario de la lista de archivos
+	private JButton button;//Boton que reproduce el siguiente archivo de la lista de archivos
+	private JButton reanudar;//boton reanudar reproduccion
+	private JButton pausa;//boton pausar reproduccion
+	private JTextField resultado;//titulo con marquesina a la derecha que muestra el nombre del archivo
+	private JTextField tiempo;//campo de texto donde se muestra el tiempoo de la cancion
+	private JTextField txtHistorico;//titulo de la lista de anteriores archivos
+	private JSlider sliderProgreso;//slider donde se ve el progreso de reproduccion 
+	private JSlider sliderVol;//slider donde puedes ajustar el volumen
+	private JLabel tituloReproductorJ;//titulo principal del programa
+	private JList historico;//jlist donde estan los historicos archivos
+	private JComboBox selectorVelocidad;//Caja combo donde puedes seleccionar la velocidad de reproduccion
+	private Color colorBotonRepe;//estilo por defecto del boton repetir
+	private boolean  repeticion=false;//si el boton de repetir esta activo
+	private ArrayList<HistoricoSonido> histMus;//Lista con el historial de archivos
+	private static ReproductorMusica mus;//referencia al objeto que encapsula el controlador del archivo que se esta reproduciendo
+	
+	
+	
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args)  {
-		
 		Application.launch(args);
-	      
-		
 	}
 
 	
@@ -74,7 +87,6 @@ public class reproductorMusicaC extends javafx.application.Application{
 	 */
 	public reproductorMusicaC() {
 		initialize();
-		
 	}
 
 	/**
@@ -84,13 +96,11 @@ public class reproductorMusicaC extends javafx.application.Application{
 
 	private void initialize() {
 		//Inicializacion de variables
-		ArrayList<HistoricoSonido> histMus = new ArrayList<HistoricoSonido>();
+		histMus = new ArrayList<HistoricoSonido>();
 		JFileChooser chooser = new JFileChooser();
-		JButton reanudar  = new JButton("\u25BA");
-		JButton pausa = new JButton("||");
-		JSlider sliderProgreso = new JSlider();
-		sliderProgreso.setValue(0);
-		sliderProgreso.setMaximum(1000);
+		reanudar  = new JButton("\u25BA");
+		pausa = new JButton("||");
+		
 		
 		mus = null;//Primera vez que se  ejecuta la refencia a null hasta que no elija archivo
 		
@@ -108,7 +118,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		//Titulo label del programa
-		JLabel tituloReproductorJ = new JLabel("Reproductor musica Java");
+		tituloReproductorJ = new JLabel("Reproductor musica Java");
 		tituloReproductorJ.setFocusable(false);
 		tituloReproductorJ.setHorizontalAlignment(SwingConstants.CENTER);
 		tituloReproductorJ.setForeground(Color.ORANGE);
@@ -166,13 +176,13 @@ public class reproductorMusicaC extends javafx.application.Application{
 		tiempo = new JTextField();
 		tiempo.setFocusable(false);
 		tiempo.setHorizontalAlignment(SwingConstants.CENTER);
-		tiempo.setBounds(174, 268, 60, 30);
+		tiempo.setBounds(30, 268, 60, 30);
 		frame.getContentPane().add(tiempo);
 		tiempo.setColumns(10);
 		
 		
 		//SLIDER AJUSTAR VOLUMEN
-		JSlider sliderVol = new JSlider();
+		sliderVol = new JSlider();
 		sliderVol.setOrientation(SwingConstants.VERTICAL);
 		//lisenner para si movemos la ruleta cuando el raton entre por el slider ajustar el volumen
 		sliderVol.addMouseWheelListener(new MouseWheelListener() {
@@ -227,6 +237,9 @@ public class reproductorMusicaC extends javafx.application.Application{
 		*/
 		
 		//SLIDER PROGRESO ARCHIVO
+		sliderProgreso = new JSlider();
+		sliderProgreso.setValue(0);
+		sliderProgreso.setMaximum(1000);
 		//Para que cuando se arrastre el raton sobre el slider ajuste el progreso de la cancion
 				sliderProgreso.addMouseMotionListener(new MouseMotionAdapter() {
 					@Override
@@ -241,15 +254,15 @@ public class reproductorMusicaC extends javafx.application.Application{
 				    @Override
 				    public void mouseWheelMoved(MouseWheelEvent e) {
 				    	if(mus!=null) {
-				        int direccion = e.getWheelRotation();
-				        if (direccion > 0) {
-				            //direccion derecha
-				        	sliderProgreso.setValue(sliderProgreso.getValue() + 10);
-				        } else {
-				        	//direccion izquiierda
-				        	sliderProgreso.setValue(sliderProgreso.getValue() - 10);
-				        }
-				        mus.ajustarTiempo(sliderProgreso.getValue());
+					        int direccion = e.getWheelRotation();
+					        if (direccion > 0) {
+					            //direccion derecha
+					        	sliderProgreso.setValue(sliderProgreso.getValue() + 10);
+					        } else {
+					        	//direccion izquiierda
+					        	sliderProgreso.setValue(sliderProgreso.getValue() - 10);
+					        }
+					        mus.ajustarTiempo(sliderProgreso.getValue());
 				    	}
 				    }
 				});
@@ -258,29 +271,29 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		//LISTA DE CANCIONES HISTORICAS
-		JList historico = new JList() ;
+		historico = new JList() ;
 		JScrollPane desliz= new JScrollPane(historico);
 		desliz.setBounds(49, 128, 472, 108);
 		frame.getContentPane().add(desliz);
 		
 		
 		//SELECTOR DE VELOCIDAD
-				JComboBox selectorVelocidad = new JComboBox();
+				selectorVelocidad = new JComboBox();
 				selectorVelocidad.setMaximumRowCount(9);
-				
 				selectorVelocidad.setAutoscrolls(true);
-				selectorVelocidad.setBounds(384, 268, 60, 30);
+				selectorVelocidad.setBounds(461, 268, 60, 30);
 				frame.getContentPane().add(selectorVelocidad);
 				selectorVelocidad.addItem("x0.25");
 				selectorVelocidad.addItem("x0.5");
 				selectorVelocidad.addItem("x0.75");
+				selectorVelocidad.addItem("x0.90");
 				selectorVelocidad.addItem("x1");
 				selectorVelocidad.addItem("x1.10");
 				selectorVelocidad.addItem("x1.25");
 				selectorVelocidad.addItem("x1.5");
 				selectorVelocidad.addItem("x2");
 				selectorVelocidad.addItem("x4");
-				selectorVelocidad.setSelectedIndex(3);
+				selectorVelocidad.setSelectedIndex(4);
 				selectorVelocidad.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -306,7 +319,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 					        }
 					        mus.ajustarVelocidad(Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())));
 					    	}
-						
+						frame.requestFocusInWindow();
 					}
 				});
 				
@@ -314,7 +327,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		//BOTON ELEGIR CANCION
-		JButton eligeFileBoton = new JButton("Elegir Cancion...");
+		eligeFileBoton = new JButton("Elegir Cancion...");
 		//le cambiamos el primer directorio a buscar por el escritorio del usuario que esta
 		chooser.setCurrentDirectory(new File  
 				(System.getProperty("user.home") + System.getProperty("file.separator")+ "Desktop"));
@@ -330,10 +343,10 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        	//si ya habia archivo elegido
 		        	if(mus!=null)  {
 		        		mus.getMediaPlayer().stop();//paramos la cancion
-		        		mus.cambiarCancion(chooser.getSelectedFile().getAbsolutePath(),repeticion);
+		        		mus.cambiarCancion(chooser.getSelectedFile().getAbsolutePath(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 		        		
 		        	}else {//si es la primera vez que se elije un archivo
-		        		mus = new ReproductorMusica(chooser.getSelectedFile().getAbsolutePath(), repeticion);
+		        		mus = new ReproductorMusica(chooser.getSelectedFile().getAbsolutePath(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 		        		
 		        	}
 		        	//añadimos esa ruta y nombre de archivo al historico
@@ -355,7 +368,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        	
 		        	
 		        	
-		        	selectorVelocidad.setSelectedIndex(3);//para no desincronizarlo!
+		        	selectorVelocidad.setSelectedIndex(4);//para no desincronizarlo!
 		            mus.reproducirInicio();//lo reproducimos
 		            resultado.setText(primerVezTitulo(mus.getNombreCancion()));//cambiamos el titulo 
 		            
@@ -364,7 +377,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        }else {
 		        //	resultado.setText("Intentalo de nuevo");
 		        }
-		       
+		        frame.requestFocusInWindow();
 		        
 				
 				
@@ -375,8 +388,9 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		//BOTON REPETICION CANCION
-		JButton repeticionBoton = new JButton("\uD83D\uDD04");
-		colorBotonRepe= repeticionBoton.getBackground();//para volver al estilo inicial
+		repeticionBoton = new JButton("\uD83D\uDD04");
+		colorBotonRepe= repeticionBoton.getBackground();//para poder volver al estilo inicial
+		
 		repeticionBoton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(mus!=null) {
@@ -390,11 +404,12 @@ public class reproductorMusicaC extends javafx.application.Application{
 						repeticionBoton.setBackground(colorBotonRepe);//para volver al estilo inicial
 					}
 				}
+				frame.requestFocusInWindow();
 				
 			}
 		});
 		repeticionBoton.setMargin(new Insets(0, 0, 0, 0));
-		repeticionBoton.setBounds(314, 268, 60, 30);
+		repeticionBoton.setBounds(391, 268, 60, 30);
 		frame.getContentPane().add(repeticionBoton);
 		
 		txtHistorico = new JTextField("Historico");
@@ -408,6 +423,17 @@ public class reproductorMusicaC extends javafx.application.Application{
 		txtHistorico.setBackground(Color.GRAY);
 		txtHistorico.setBounds(49, 108, 472, 18);
 		frame.getContentPane().add(txtHistorico);
+		
+		//BOTON ATRAS ARCHIVO
+		botonAtras = new JButton("<<");
+		botonAtras.setBounds(165, 268, 60, 30);
+		frame.getContentPane().add(botonAtras);
+		
+		
+		//BOTON ADELANTE ARCHIVO
+		button = new JButton(">>");
+		button.setBounds(321, 268, 60, 30);
+		frame.getContentPane().add(button);
 		
 		
 		
@@ -459,12 +485,13 @@ public class reproductorMusicaC extends javafx.application.Application{
 		            // Double-click detected
 		            int index = list.locationToIndex(evt.getPoint());
 		            System.out.println("asfadf "+index);
-		            mus.cambiarCancion(histMus.get(index).getDireccion(),repeticion);
+		            mus.cambiarCancion(histMus.get(index).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 		            mus.reproducirInicio();
 		            resultado.setText(primerVezTitulo(mus.getNombreCancion()));
 		            
 		            
 		        } 
+		        frame.requestFocusInWindow();
 		            // Triple-click detected
 		            //int index = list.locationToIndex(evt.getPoint());
 		            
@@ -472,13 +499,39 @@ public class reproductorMusicaC extends javafx.application.Application{
 		});
 		
 		
+		frame.setFocusable(true);//para que nada mas abramos la aplicacion podamos pulsar teclas
+		//eventos teclas
+        frame.addKeyListener(new KeyListener(){
+            public void keyTyped(KeyEvent e){
+                
+            }
+            public void keyPressed(KeyEvent e){
+            	System.out.println(e.getKeyCode());
+                if(e.getKeyCode()==e.VK_SPACE){
+                	if(mus!=null) {
+                		if(reanudar.isVisible()) {
+                			reanudar.doClick();
+                		}else {
+                			pausa.doClick();
+                		}
+                		
+                	}
+                   // btnElegir.doClick();//como si se estubiera pulsando el boton con un click
+                   
+                }
+                
+                if(e.getKeyCode()==KeyEvent.VK_ESCAPE){
+                    System.exit(0);
+                }
+            }
+            public void keyReleased(KeyEvent e){
+                
+            }
+        });
+		
+		
 		
 		frame.setTitle("Reproductor Musica Java v1.0 by Pablo98ad");
-		try {
-			frame.setIconImage(ImageIO.read(new File("Ficheros/calc.png")));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
 		
 	}
 
