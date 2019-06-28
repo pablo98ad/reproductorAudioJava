@@ -26,10 +26,17 @@ public class ReproductorMusica {
         if(repe) {
         	this.setRepeticion(true);
         }else {
-        	this.setRepeticion(true);
+        	this.setRepeticion(false);
         }
+	}
+	
+	public void ajustarVelocidad(double v) {
+		this.mediaPlayer.setRate(v);
 		
 	}
+	
+	
+	
 	public String getPath() {
 		return this.path;
 	}
@@ -70,7 +77,6 @@ public class ReproductorMusica {
     }
 	
 	public void setRepeticion(boolean siono) {
-		Status s=this.mediaPlayer.getStatus();
 		if(siono) {
 			 mediaPlayer.setAutoPlay(true);//para que cuando termine se siga reproduciendo
 		     mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
