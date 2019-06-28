@@ -333,7 +333,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		//BOTON ELEGIR CANCION
-		eligeFileBoton = new JButton("Elegir Cancion...");
+		eligeFileBoton = new JButton("Elegir Canciones...");
 		eligeFileBoton.setToolTipText("Elije un archivo de audio");
 		//le cambiamos el primer directorio a buscar por el escritorio del usuario que esta
 		chooser.setCurrentDirectory(new File  
@@ -344,25 +344,34 @@ public class reproductorMusicaC extends javafx.application.Application{
 			public void actionPerformed(ActionEvent arg0) {
 				
 				chooser.setFileFilter(filter);//le asignamos el filtro de archivos al elegidor
-		        int returnVal = chooser.showOpenDialog(null);
+				chooser.setMultiSelectionEnabled(true);//le decimos que podemos seleccionar mas de un archivo
+		        chooser.setDialogTitle("Elige uno o varios archivos de audio");
+				int returnVal = chooser.showOpenDialog(null);
+		        File[] files = chooser.getSelectedFiles();
+		        //SE PUEDEN AÑADIR MAS DE 1 FILE
 		        if(returnVal == JFileChooser.APPROVE_OPTION) {
 		        	
 		        	//si ya habia archivo elegido
 		        	if(mus!=null)  {
-		        		mus.getMediaPlayer().stop();//paramos la cancion
-		        		mus.cambiarCancion(chooser.getSelectedFile().getAbsolutePath(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+		        		/*mus.getMediaPlayer().stop();//paramos la cancion
+		        		mus.cambiarCancion(files[0].getAbsolutePath(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 		        		HistoricoSonido d= new HistoricoSonido(mus.getPath(), mus.getNombreCancion());
-			        	histMus.add(d);
-		        		indiceArchivoActual=histMus.size()-1;
+			        	//histMus.add(d);
+		        		indiceArchivoActual=histMus.size()-1;*/
 		        	
 		        	}else {//si es la primera vez que se elije un archivo
-		        		mus = new ReproductorMusica(chooser.getSelectedFile().getAbsolutePath(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+		        		mus = new ReproductorMusica(files[0].getAbsolutePath(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 		        		HistoricoSonido d= new HistoricoSonido(mus.getPath(), mus.getNombreCancion());
-			        	histMus.add(d);
+			        	//histMus.add(d);
 		        		indiceArchivoActual=0;
+		        		mus.reproducirInicio();//lo reproducimos
 		        	}
 		        	//añadimos esa ruta y nombre de archivo al historico
 		        	
+		        	for(int i=0; i<files.length;i++) {
+		        		histMus.add(new HistoricoSonido(files[i].getAbsolutePath(),getNombreCancion(files[i].getAbsolutePath())));
+		        		
+		        	}
 		        	
 		        	
 		        	//Crear un objeto DefaultListModel
@@ -379,8 +388,8 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        	
 		        	
 		        	System.out.println("lo añado a la posicion"+ indiceArchivoActual);
-		        	selectorVelocidad.setSelectedIndex(4);//para no desincronizarlo!
-		            mus.reproducirInicio();//lo reproducimos
+		        	//selectorVelocidad.setSelectedIndex(4);//para no desincronizarlo!
+		            
 		            resultado.setText(primerVezTitulo(mus.getNombreCancion()));//cambiamos el titulo 
 		            
 		            
@@ -394,7 +403,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 				
 			}
 		});
-		eligeFileBoton.setBounds(234, 77, 108, 22);
+		eligeFileBoton.setBounds(234, 77, 110, 22);
 		frame.getContentPane().add(eligeFileBoton);
 		
 		
@@ -424,7 +433,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		repeticionBoton.setBounds(391, 268, 60, 30);
 		frame.getContentPane().add(repeticionBoton);
 		
-		txtHistorico = new JTextField("Historico");
+		txtHistorico = new JTextField("Archivos Seleccionados");
 		txtHistorico.setFocusable(false);
 		txtHistorico.setMargin(new Insets(0, 0, 0, 0));
 		txtHistorico.setHorizontalAlignment(SwingConstants.CENTER);
@@ -619,7 +628,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		
-		frame.setTitle("Reproductor Musica Java v1.1 by Pablo98ad");
+		frame.setTitle("Reproductor Musica Java v1.3 by Pablo98ad");
 		
 	}
 
@@ -638,6 +647,16 @@ public class reproductorMusicaC extends javafx.application.Application{
 		//System.out.println(espacios.length());
 		return pantalla;
 	}
+	
+	public String getNombreCancion(String ruta) {
+		String n= ruta.substring(ruta.lastIndexOf('\\')+1, ruta.lastIndexOf('.'));
+		//por ejempo "C:/Pablo/Escritorio/hola.mp3" cojeria solo "hola"
+		return n;
+	}
+	
+	
+	
+	
 	@Override
 	public void start(Stage arg0) throws Exception {
 		
