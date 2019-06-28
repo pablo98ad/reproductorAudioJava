@@ -55,6 +55,7 @@ import javax.swing.JScrollPane;
 import java.awt.List;
 import java.awt.ScrollPane;
 import java.awt.event.MouseWheelListener;
+import java.awt.event.WindowEvent;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.JComboBox;
 
@@ -469,6 +470,13 @@ public class reproductorMusicaC extends javafx.application.Application{
 			            indiceArchivoActual--;
 			            historico.setSelectedIndex(indiceArchivoActual);
 					
+					}else {
+						mus.cambiarCancion(histMus.get(histMus.size()-1).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+			            mus.reproducirInicio();
+			            resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
+			            indiceArchivoActual=histMus.size()-1;
+			            historico.setSelectedIndex(indiceArchivoActual);
+						
 					}
 				
 				}
@@ -495,6 +503,13 @@ public class reproductorMusicaC extends javafx.application.Application{
 			            historico.setSelectedIndex(indiceArchivoActual);
 			            
 					
+					}else {
+						mus.cambiarCancion(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+			            mus.reproducirInicio();
+			            resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
+			            indiceArchivoActual=0;
+			            historico.setSelectedIndex(indiceArchivoActual);
+						
 					}
 				
 				}
@@ -537,6 +552,18 @@ public class reproductorMusicaC extends javafx.application.Application{
 				    }
 				}); 
 		efectoMarquesinaTituloCancion.start();
+		
+		
+		
+		//COMPROBACION DE DISPONIBILIDAD DE ARCHIVOS
+				Timer comprobarRutasFiles = new Timer (1500, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
+						{ 
+						    public void actionPerformed(ActionEvent e) 
+						    { 
+						    	comprobarDisponibilidadFiles();
+						    }
+						}); 
+				comprobarRutasFiles.start();
 		
 		//CONTROLADOR RATON SELECCION HISTORICO DE ARCHIVOS
 		historico.addMouseListener(new MouseAdapter() {
@@ -631,7 +658,8 @@ public class reproductorMusicaC extends javafx.application.Application{
                     botonAdelante.doClick();
                 }
                 if(e.getKeyCode()==KeyEvent.VK_ESCAPE){
-                    System.exit(0);
+                	//llamamos al la fuincion de  cerra para que la captura el lisenner de abajo
+                    frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
                 }
             }
             public void keyReleased(KeyEvent e){
@@ -650,13 +678,10 @@ public class reproductorMusicaC extends javafx.application.Application{
         
         
         if(existeArchivoHisto()) {//si ya abrio el programa
-			System.out.println("Existe");
+			//System.out.println("Existe");
 			histMus=obtenerHistoricoMusica();
 			if(histMus.size()!=0 && histMus!=null) {
 				actualizarHistorico();
-				for (int i=0; i<histMus.size();i++) {
-					System.out.println(histMus.get(i).getDireccion());
-				}
 				mus= new ReproductorMusica(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 				//mus.cambiarCancion(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 		        mus.reproducirInicio();
@@ -710,7 +735,23 @@ public class reproductorMusicaC extends javafx.application.Application{
 				}
 			}		
 	}
-
+	
+	
+	public void comprobarDisponibilidadFiles() {
+		File f;
+		int todos=0;
+		for(int i=0; i<histMus.size();i++) {
+			f= new File(histMus.get(i).getDireccion());
+			if(!f.exists()) {
+				histMus.remove(i);
+				todos++;
+			}
+			
+			//System.out.println(todos+" de "+histMus.size());
+		}
+		actualizarHistorico();
+		historico.setSelectedIndex(indiceArchivoActual);//para que no se deseleccione la cancion reproducida
+	}
 		
 	private String primerVezTitulo(String t) {
 		//al cambiar una cancion o el primer mensaje quie aparece en el texto resultado es tratado por este metodo
@@ -769,12 +810,6 @@ public class reproductorMusicaC extends javafx.application.Application{
 				}
 			}
 		return h;
-		
-		
-		
-		
-		
-		
 	}
 	
 	public void actualizarHistorico() {
@@ -792,7 +827,6 @@ public class reproductorMusicaC extends javafx.application.Application{
 	
 	public boolean existeArchivoHisto() {
 		boolean existe=false;
-		System.out.println(System.getenv("APPDATA"));
 		String direccion=System.getenv("APPDATA")+"\\pablo98ad\\reproductorSonidoJava\\historial.json";
 		File f = new File(direccion);
 		
