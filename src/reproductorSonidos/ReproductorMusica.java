@@ -166,7 +166,7 @@ public class ReproductorMusica {
 			
 			
 			//System.out.println(duracionActual);
-			System.out.println(duracionTotal);
+			//System.out.println(duracionTotal);
 			
 			//duracionActual=duracionActual/1000;
 			res=(int)(duracionActual*1000)/duracionTotal;
