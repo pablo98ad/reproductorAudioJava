@@ -22,7 +22,11 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Time;
 import java.util.ArrayList;
@@ -30,6 +34,10 @@ import java.util.ArrayList;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import javax.swing.event.ChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -97,11 +105,12 @@ public class reproductorMusicaC extends javafx.application.Application{
 
 	private void initialize() {
 		//Inicializacion de variables
-		histMus = new ArrayList<HistoricoSonido>();
+		
 		JFileChooser chooser = new JFileChooser();
 		reanudar  = new JButton("\u25BA");
 		pausa = new JButton("||");
 		
+
 		
 		mus = null;//Primera vez que se  ejecuta la refencia a null hasta que no elija archivo
 		
@@ -114,7 +123,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		frame = new JFrame();
 		frame.setResizable(false);
 		frame.setBounds(100, 100, 588, 338);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
 		
@@ -387,7 +396,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        	
 		        	
 		        	
-		        	System.out.println("lo añado a la posicion"+ indiceArchivoActual);
+		        	//System.out.println("lo añado a la posicion"+ indiceArchivoActual);
 		        	//selectorVelocidad.setSelectedIndex(4);//para no desincronizarlo!
 		            
 		            resultado.setText(primerVezTitulo(mus.getNombreCancion()));//cambiamos el titulo 
@@ -548,15 +557,18 @@ public class reproductorMusicaC extends javafx.application.Application{
 		    		HistoricoSonido borrado=histMus.remove(index);
 		    		
 		        	//borramos el elemento que pulsamos doble click y actualizamos el cuadro
-
-		    		DefaultListModel listModel = new DefaultListModel();
+		    		
+		    		actualizarHistorico();
+		    		//Eso es igual a esto
+		    		
+		    		/*DefaultListModel listModel = new DefaultListModel();
 		        	//Recorrer el contenido del ArrayList
 		        	for(int i=0; i<histMus.size(); i++) {
 		        	    //Añadir cada elemento del ArrayList en el modelo de la lista
 		        	    listModel.add(i, histMus.get(i));
 		        	}
 		        	//Asociar el modelo de lista al JList
-		        	historico.setModel(listModel);
+		        	historico.setModel(listModel);*/
 		        	
 		        	
 		        	if(histMus.size()==0) {//si no hay nada en el historial se deja de reproducir el que esta
@@ -584,6 +596,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		    		
 		        }
 		        frame.requestFocusInWindow();
+
 		            // Triple-click detected
 		            //int index = list.locationToIndex(evt.getPoint());
 		            
@@ -598,7 +611,7 @@ public class reproductorMusicaC extends javafx.application.Application{
                 
             }
             public void keyPressed(KeyEvent e){
-            	System.out.println(e.getKeyCode());
+            	//System.out.println(e.getKeyCode());
                 if(e.getKeyCode()==e.VK_SPACE){
                 	if(mus!=null) {
                 		if(reanudar.isVisible()) {
@@ -626,10 +639,76 @@ public class reproductorMusicaC extends javafx.application.Application{
             }
         });
 		
-		
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                System.out.println("Saliendo");	
+            	guardarHistorico();
+                   System.exit(0);
+             }
+            });
+        
+        
+        if(existeArchivoHisto()) {//si ya abrio el programa
+			System.out.println("Existe");
+			histMus=obtenerHistoricoMusica();
+			if(histMus.size()!=0 && histMus!=null) {
+				actualizarHistorico();
+				for (int i=0; i<histMus.size();i++) {
+					System.out.println(histMus.get(i).getDireccion());
+				}
+				mus= new ReproductorMusica(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+				//mus.cambiarCancion(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+		        mus.reproducirInicio();
+		        resultado.setText(primerVezTitulo(mus.getNombreCancion()));
+				
+			}
+			
+			
+		}else {//si es la primera vez que abre el programa
+			crearArchivosApp();
+			histMus = new ArrayList<HistoricoSonido>();
+		}
 		
 		frame.setTitle("Reproductor Musica Java v1.3 by Pablo98ad");
 		
+	}
+	/**
+	 * Metodo que guarda el historial de archivos
+	 */
+	public  void guardarHistorico() {
+		String linea;
+		BufferedWriter fw=null;
+		String direccion=System.getenv("APPDATA")+"\\pablo98ad\\reproductorSonidoJava\\historial.json";
+		JSONObject archivo;
+		
+		
+		try {
+			fw=new BufferedWriter(new FileWriter(direccion,false));//abrimos el flujo de escritura diciendole que no sobreescriba lo que hay
+			
+			for (int i=0; i<histMus.size();i++) {
+				try {
+					archivo = new JSONObject(histMus.get(i));
+					linea=archivo.toString();
+					fw.write(linea);//escribimos la linea en el fichero
+					fw.newLine();//escribimos un salto de linea
+
+				}catch(IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+		} catch (IOException e) {
+			System.out.printf("Error de Entrada/Salida: %s \n",e.getMessage());
+		}finally {
+			if (fw!=null) {
+				try{
+					fw.close();//cerramos el flujo de escritura
+				} catch (IOException e) {
+					System.out.printf("Error de Entrada/Salida: %s \n",e.getMessage());
+				}
+				}
+			}		
 	}
 
 		
@@ -648,6 +727,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		return pantalla;
 	}
 	
+	
 	public String getNombreCancion(String ruta) {
 		String n= ruta.substring(ruta.lastIndexOf('\\')+1, ruta.lastIndexOf('.'));
 		//por ejempo "C:/Pablo/Escritorio/hola.mp3" cojeria solo "hola"
@@ -655,6 +735,84 @@ public class reproductorMusicaC extends javafx.application.Application{
 	}
 	
 	
+	public ArrayList<HistoricoSonido> obtenerHistoricoMusica(){
+		ArrayList<HistoricoSonido> h= new ArrayList<HistoricoSonido>();
+		BufferedReader fr=null;
+		String linea;
+		String direccion=System.getenv("APPDATA")+"\\pablo98ad\\reproductorSonidoJava\\historial.json";
+		JSONObject archivo;
+		
+		try {
+			fr=new BufferedReader(new FileReader(direccion));//abrimos el flujo de escritura diciendole que no sobreescriba lo que hay
+			
+			linea= fr.readLine();//leemos la primera linea		
+			while(linea!=null) {//si no hay linea nos salimos del bucle
+				try {
+					archivo = new JSONObject(linea);	
+					h.add(new HistoricoSonido(archivo.getString("direccion"), archivo.getString("nombre")));
+					//System.out.println(linea);
+							
+				}catch(JSONException e) {//si una linea esta mal escrita y da error no se interrumpe la carga
+					e.printStackTrace();
+				}
+				linea= fr.readLine();
+			}
+		} catch (IOException e) {
+			System.out.printf("Error de Entrada/Salida: %s \n",e.getMessage());
+		}finally {
+			if (fr!=null) {
+				try{
+					fr.close();//cerramos el flujo de escritura
+				} catch (IOException e) {
+					System.out.printf("Error de Entrada/Salida: %s \n",e.getMessage());
+				}
+				}
+			}
+		return h;
+		
+		
+		
+		
+		
+		
+	}
+	
+	public void actualizarHistorico() {
+		DefaultListModel listModel = new DefaultListModel();
+    	//Recorrer el contenido del ArrayList
+    	for(int i=0; i<histMus.size(); i++) {
+    	    //Añadir cada elemento del ArrayList en el modelo de la lista
+    	    listModel.add(i, histMus.get(i));
+    	}
+    	//Asociar el modelo de lista al JList
+    	historico.setModel(listModel);
+		
+		
+	}
+	
+	public boolean existeArchivoHisto() {
+		boolean existe=false;
+		System.out.println(System.getenv("APPDATA"));
+		String direccion=System.getenv("APPDATA")+"\\pablo98ad\\reproductorSonidoJava\\historial.json";
+		File f = new File(direccion);
+		
+		if(f.exists()) {
+			existe=true;
+		}
+		return existe;
+	}
+	
+	public void crearArchivosApp() {
+		String direccion=System.getenv("APPDATA")+"\\pablo98ad\\reproductorSonidoJava\\historial.json";
+		File f = new File(direccion);
+		try {
+			f.getParentFile().mkdirs();
+			f.createNewFile();
+		} catch (IOException e) {
+			System.out.println("No se puede crear: "+e.getMessage());
+		}
+		
+	}
 	
 	
 	@Override
