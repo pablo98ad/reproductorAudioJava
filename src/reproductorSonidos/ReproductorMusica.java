@@ -66,7 +66,9 @@ public class ReproductorMusica {
 	 * @param repe si se va a repetir la cancion
 	 */
 	public void cambiarCancion(String direccion, int volumen, double velocidad, boolean repe) {
-		this.mediaPlayer.stop();
+		if(this.mediaPlayer!=null) {
+			this.mediaPlayer.stop();
+		}
 		this.mediaPlayer=null;
 		this.path=direccion;
 		this.media = new Media(new File(this.path).toURI().toString());
