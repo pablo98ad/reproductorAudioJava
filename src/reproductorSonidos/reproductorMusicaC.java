@@ -17,6 +17,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Insets;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -58,6 +60,7 @@ import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.JComboBox;
+import javax.swing.UIManager;
 
 public class reproductorMusicaC extends javafx.application.Application{
 
@@ -76,6 +79,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 	private JLabel tituloReproductorJ;//titulo principal del programa
 	private JList historico;//jlist donde estan los historicos archivos
 	private JComboBox selectorVelocidad;//Caja combo donde puedes seleccionar la velocidad de reproduccion
+	private JComboBox repetirOAleatorio;//Caja combo donde puedes seecionar que ocurre cuando termina la reproducciond el archivo
 	private Color colorBotonRepe;//estilo por defecto del boton repetir
 	private boolean  repeticion=false;//si el boton de repetir esta activo
 	private ArrayList<HistoricoSonido> histMus;//Lista con el historial de archivos
@@ -161,7 +165,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 				}
 			}
 		});
-		reanudar.setBounds(244, 268, 60, 30);
+		reanudar.setBounds(249, 268, 60, 30);
 		frame.getContentPane().add(reanudar);
 		reanudar.setVisible(false);
 		
@@ -180,7 +184,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 				
 			}
 		});
-		pausa.setBounds(244, 268, 60, 30);
+		pausa.setBounds(249, 268, 60, 30);
 		frame.getContentPane().add(pausa);
 
 		
@@ -310,6 +314,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 				selectorVelocidad.addItem("x2");
 				selectorVelocidad.addItem("x4");
 				selectorVelocidad.setSelectedIndex(4);
+				//selectorVelocidad.set
 				selectorVelocidad.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -358,7 +363,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        chooser.setDialogTitle("Elige uno o varios archivos de audio");
 				int returnVal = chooser.showOpenDialog(null);
 		        File[] files = chooser.getSelectedFiles();
-		        //SE PUEDEN AÑADIR MAS DE 1 FILE
+		        //SE PUEDEN AÃ‘ADIR MAS DE 1 FILE
 		        if(returnVal == JFileChooser.APPROVE_OPTION) {
 		        	
 		        	//si ya habia archivo elegido
@@ -376,7 +381,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        		indiceArchivoActual=0;
 		        		mus.reproducirInicio();//lo reproducimos
 		        	}
-		        	//añadimos esa ruta y nombre de archivo al historico
+		        	//aÃ±adimos esa ruta y nombre de archivo al historico
 		        	
 		        	for(int i=0; i<files.length;i++) {
 		        		histMus.add(new HistoricoSonido(files[i].getAbsolutePath(),getNombreCancion(files[i].getAbsolutePath())));
@@ -388,7 +393,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        	DefaultListModel listModel = new DefaultListModel();
 		        	//Recorrer el contenido del ArrayList
 		        	for(int i=0; i<histMus.size(); i++) {
-		        	    //Añadir cada elemento del ArrayList en el modelo de la lista
+		        	    //AÃ±adir cada elemento del ArrayList en el modelo de la lista
 		        	    listModel.add(i, histMus.get(i));
 		        	}
 		        	//Asociar el modelo de lista al JList
@@ -397,7 +402,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        	
 		        	
 		        	
-		        	//System.out.println("lo añado a la posicion"+ indiceArchivoActual);
+		        	//System.out.println("lo aÃ±ado a la posicion"+ indiceArchivoActual);
 		        	//selectorVelocidad.setSelectedIndex(4);//para no desincronizarlo!
 		            
 		            resultado.setText(primerVezTitulo(mus.getNombreCancion()));//cambiamos el titulo 
@@ -418,7 +423,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		//BOTON REPETICION CANCION
-		repeticionBoton = new JButton("\uD83D\uDD04");
+		repeticionBoton = new JButton("ðŸ”‚");
 		repeticionBoton.setToolTipText("Pulsa para que se repita la cancion o no");
 		colorBotonRepe= repeticionBoton.getBackground();//para poder volver al estilo inicial
 		
@@ -428,10 +433,14 @@ public class reproductorMusicaC extends javafx.application.Application{
 					if(mus.getSeVaRepetir()==false) {
 						mus.setRepeticion(true);
 						repeticion=true;
+						repeticionBoton.setText("\uD83D\uDD04");
+						repeticionBoton.setToolTipText("Reproducir una vez");
 						repeticionBoton.setBackground(new Color(102,255,51));
 					}else {
 						mus.setRepeticion(false);
 						repeticion=false;
+						repeticionBoton.setText("ðŸ”‚");
+						repeticionBoton.setToolTipText("Reproducir siempre");
 						repeticionBoton.setBackground(colorBotonRepe);//para volver al estilo inicial
 					}
 				}
@@ -483,7 +492,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 				
 			}
 		});
-		botonAtras.setBounds(165, 268, 60, 30);
+		botonAtras.setBounds(174, 268, 60, 30);
 		frame.getContentPane().add(botonAtras);
 		
 		
@@ -518,6 +527,37 @@ public class reproductorMusicaC extends javafx.application.Application{
 		});
 		botonAdelante.setBounds(321, 268, 60, 30);
 		frame.getContentPane().add(botonAdelante);
+		
+		//POR HACER
+		//Selecctor
+		repetirOAleatorio = new JComboBox(new String[] { "\ud83d\udd00", "â¬", "\u25BA"});
+		repetirOAleatorio.setToolTipText("Cambia que pasa al terminar la reproduccion");
+		repetirOAleatorio.setFont(UIManager.getFont("Button.font"));
+		repetirOAleatorio.setSelectedIndex(2);
+		repetirOAleatorio.setBounds(100, 268, 60, 30);
+		frame.getContentPane().add(repetirOAleatorio);
+		repetirOAleatorio.setRenderer(new BasicComboBoxRenderer() {
+	         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+	        	 String[] mensajes= new String[] { "Reproducir aleatoriamente los siguientes archivos", "Reproducir por su orden los siguientes archivos", "Ninguna cancion nueva al finalizar"};
+	        	 
+	        	 if (isSelected) {
+	               setBackground(list.getSelectionBackground());
+	               setForeground(list.getSelectionForeground());
+	               if (index > -1) {
+	                  list.setToolTipText(mensajes[index]);
+	               }
+	            }
+	            else {
+	               setBackground(list.getBackground());
+	               setForeground(list.getForeground());
+	            }
+	            setFont(list.getFont());
+	            setText((value == null) ? "" : value.toString());
+	  
+	            return this;
+	         }
+	      });
+		
 		
 		
 		
@@ -591,7 +631,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		    		/*DefaultListModel listModel = new DefaultListModel();
 		        	//Recorrer el contenido del ArrayList
 		        	for(int i=0; i<histMus.size(); i++) {
-		        	    //Añadir cada elemento del ArrayList en el modelo de la lista
+		        	    //AÃ±adir cada elemento del ArrayList en el modelo de la lista
 		        	    listModel.add(i, histMus.get(i));
 		        	}
 		        	//Asociar el modelo de lista al JList
@@ -816,7 +856,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		DefaultListModel listModel = new DefaultListModel();
     	//Recorrer el contenido del ArrayList
     	for(int i=0; i<histMus.size(); i++) {
-    	    //Añadir cada elemento del ArrayList en el modelo de la lista
+    	    //AÃ±adir cada elemento del ArrayList en el modelo de la lista
     	    listModel.add(i, histMus.get(i));
     	}
     	//Asociar el modelo de lista al JList

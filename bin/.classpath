@@ -4,12 +4,6 @@
 	<classpathentry excluding="Ficheros/" kind="src" path="src"/>
 	<classpathentry excluding="src/|Ficheros/|ClasesNecesarias/" kind="src" path=""/>
 	<classpathentry kind="src" path="ClasesNecesarias"/>
-	<classpathentry kind="lib" path="F:/Pablo/Descargas/jar_files/javafx-base-13-ea+7.jar"/>
-	<classpathentry kind="lib" path="F:/Pablo/Descargas/jar_files/javafx-base-13-ea+7-linux.jar"/>
-	<classpathentry kind="lib" path="F:/Pablo/Descargas/jar_files/javafx-graphics-13-ea+7.jar"/>
-	<classpathentry kind="lib" path="F:/Pablo/Descargas/jar_files/javafx-graphics-13-ea+7-linux.jar"/>
-	<classpathentry kind="lib" path="F:/Pablo/Descargas/jar_files/javafx-media-13-ea+7.jar"/>
-	<classpathentry kind="lib" path="F:/Pablo/Descargas/jar_files/javafx-media-13-ea+7-linux.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Pablo/eclipse-workspace/reproductorMusicaJava/ClasesNecesarias/javafx-base-13-ea+7.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Pablo/eclipse-workspace/reproductorMusicaJava/ClasesNecesarias/javafx-base-13-ea+7-linux.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Pablo/eclipse-workspace/reproductorMusicaJava/ClasesNecesarias/javafx-graphics-13-ea+7.jar"/>
