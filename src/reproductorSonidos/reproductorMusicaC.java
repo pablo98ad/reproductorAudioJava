@@ -108,6 +108,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 	 * @wbp.parser.entryPoint
 	 */
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void initialize() {
 		//Inicializacion de variables
 		
@@ -380,6 +381,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 			        	//histMus.add(d);
 		        		indiceArchivoActual=0;
 		        		mus.reproducirInicio();//lo reproducimos
+		        		lisenerFinArchivo();
 		        	}
 		        	//añadimos esa ruta y nombre de archivo al historico
 		        	
@@ -512,7 +514,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 			            historico.setSelectedIndex(indiceArchivoActual);
 			            
 					
-					}else {
+					}else {//si se da al siguiente 
 						mus.cambiarCancion(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 			            mus.reproducirInicio();
 			            resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
@@ -529,11 +531,11 @@ public class reproductorMusicaC extends javafx.application.Application{
 		frame.getContentPane().add(botonAdelante);
 		
 		//POR HACER
-		//Selecctor
-		repetirOAleatorio = new JComboBox(new String[] { "\ud83d\udd00", "⏬", "\u25BA"});
+		//Selecctor que decide que pasa al terminar la reproduccion del archivo actual
+		repetirOAleatorio = new JComboBox(new String[] { "     \ud83d\udd00", "     ⏬", "     \u25BA"});
 		repetirOAleatorio.setToolTipText("Cambia que pasa al terminar la reproduccion");
 		repetirOAleatorio.setFont(UIManager.getFont("Button.font"));
-		repetirOAleatorio.setSelectedIndex(2);
+		repetirOAleatorio.setSelectedIndex(1);
 		repetirOAleatorio.setBounds(100, 268, 60, 30);
 		frame.getContentPane().add(repetirOAleatorio);
 		repetirOAleatorio.setRenderer(new BasicComboBoxRenderer() {
@@ -562,11 +564,16 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		
+		
+		
+		
+		
 		Timer tiempoYBarraProgreso = new Timer (20, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
 		{ 
 		    public void actionPerformed(ActionEvent e) 
 		    { 
-		    	if(mus!=null) {
+		    	//System.out.println(mus.getMediaPlayer().getStatus().);
+		    	if(mus!=null && mus.getMediaPlayer()!=null) {
 			    	if(mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.PLAYING || mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.READY && mus.getMediaPlayer()!=null) {
 				    	sliderProgreso.setValue(mus.obtenerProgreso());
 				    //	System.out.println(mus.obtenerProgreso()+"   "+sliderProgreso.getValue());
@@ -616,6 +623,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		            mus.reproducirInicio();
 		            resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
 		            indiceArchivoActual=index;
+		            lisenerFinArchivo();
 		            
 		        }
 		        if (SwingUtilities.isRightMouseButton(evt)/*evt.getClickCount() == 3*/) {//Si pulsa 3 veces se elimina
@@ -653,7 +661,8 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        			mus.cambiarCancion(histMus.get(cancionAReproducir).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 					        mus.reproducirInicio();
 					        resultado.setText(primerVezTitulo(mus.getNombreCancion()));
-		        		}
+				        
+		        	}
 
 		        	
 		        	
@@ -725,7 +734,12 @@ public class reproductorMusicaC extends javafx.application.Application{
 				mus= new ReproductorMusica(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 				//mus.cambiarCancion(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 		        mus.reproducirInicio();
+		        indiceArchivoActual=0;
 		        resultado.setText(primerVezTitulo(mus.getNombreCancion()));
+		        
+		        
+		        lisenerFinArchivo();
+		        
 				
 			}
 			
@@ -735,7 +749,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 			histMus = new ArrayList<HistoricoSonido>();
 		}
 		
-		frame.setTitle("Reproductor Musica Java v1.3 by Pablo98ad");
+		frame.setTitle("Reproductor Musica Java v1.6 by Pablo98ad");
 		
 	}
 	/**
@@ -861,7 +875,39 @@ public class reproductorMusicaC extends javafx.application.Application{
     	}
     	//Asociar el modelo de lista al JList
     	historico.setModel(listModel);
+    	
+    	
 		
+		
+	}
+	
+	public void lisenerFinArchivo() {
+		//lisener si termina la reproduccion
+        mus.getMediaPlayer().setOnEndOfMedia(new Runnable() {
+            @Override
+            public void run() {
+            	
+            	if(repetirOAleatorio.getSelectedIndex()==1) {
+            		botonAdelante.doClick();
+            		System.out.println("pongo siguiente solo");
+            		
+            	}else if(repetirOAleatorio.getSelectedIndex()==0) {
+            		int fileAleatorio= (int)(Math.random()*histMus.size());
+            		mus.cambiarCancion(histMus.get(fileAleatorio).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+		            mus.reproducirInicio();
+		            resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
+		            indiceArchivoActual=fileAleatorio;
+		            historico.setSelectedIndex(indiceArchivoActual);
+            		
+            		
+            		
+            	}
+            	lisenerFinArchivo();
+            	
+                
+                System.out.println("fin");
+            }
+        });
 		
 	}
 	

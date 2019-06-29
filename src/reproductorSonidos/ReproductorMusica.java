@@ -15,6 +15,7 @@ public class ReproductorMusica {
 	private Media media;
 	private MediaPlayer mediaPlayer;
 	private boolean seVaRepetir=false;
+	private Duration duracionArchivo;
 
 	
 	public ReproductorMusica(String direccion, int volumen, double velocidad, boolean repe) {
@@ -23,13 +24,22 @@ public class ReproductorMusica {
         this.mediaPlayer = new MediaPlayer(media);
         this.ajustarVolumen(volumen);
         this.mediaPlayer.setRate(velocidad);
-        
+        this.duracionArchivo= mediaPlayer.getCycleDuration();
         
         if(repe) {
         	this.setRepeticion(true);
         }else {
         	this.setRepeticion(false);
         }
+
+		
+        
+        
+	}
+	
+	public Duration getDuracionTotal() {
+		return this.duracionArchivo;
+		
 	}
 	
 	/**
@@ -64,6 +74,7 @@ public class ReproductorMusica {
         this.mediaPlayer.play();
         this.ajustarVolumen(volumen);
         this.mediaPlayer.setRate(velocidad);
+        this.duracionArchivo= mediaPlayer.getCycleDuration();
         
         if(repe) {
         	this.setRepeticion(true);
