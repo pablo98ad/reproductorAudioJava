@@ -35,6 +35,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -133,7 +134,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		//Filtro de extensiones para cuando creemos el boton de elejir archivo
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "Archivos de Musica(.mp3, .wav)", "mp3", "wav");
+                "Archivos de Musica (.mp3, .wav .aac .pcm)", "mp3", "wav", "aac", "pcm");
 		
         
         //Ventana principal del programa
@@ -157,7 +158,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		borrarArchivos = new JButton("x");
 		borrarArchivos.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//RESETEAMOS TODO
+				//al pulsar la x RESETEAMOS TODO
 				mus.pausa();
 				mus=null;
 				histMus= new ArrayList<HistoricoSonido>();
@@ -166,6 +167,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 				resultado.setText(primerVezTitulo("Esperando archivo..."));
         		tiempo.setText("");
         		sliderProgreso.setValue(0);
+        		frame.requestFocusInWindow();//para que se pueda usar el teclado
 			}
 		});
 		borrarArchivos.setForeground(Color.RED);
@@ -181,7 +183,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		resultado.setFont(new Font("Tahoma", Font.BOLD, 13));
 		resultado.setHorizontalAlignment(SwingConstants.LEFT);
 		resultado.setEditable(false);
-		resultado.setBounds(20, 44, 552, 22);
+		resultado.setBounds(10, 44, 562, 22);
 		frame.getContentPane().add(resultado);
 		resultado.setColumns(10);
 		
@@ -195,6 +197,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 					reanudar.setVisible(false);
 					mus.reanudar();//reanudamos la cancion cuando pulsamos en reanudar
 				}
+				frame.requestFocusInWindow();//para que se pueda usar el teclado
 			}
 		});
 		reanudar.setBounds(249, 268, 60, 30);
@@ -213,6 +216,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 					pausa.setVisible(false);
 					mus.pausa();//pausamos la cancion cuando pulsamos en el boton pausa
 				}
+				frame.requestFocusInWindow();//para que se pueda usar el teclado
 				
 			}
 		});
@@ -253,6 +257,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 				if(mus!=null) {
 				mus.ajustarVolumen(sliderVol.getValue());
 				}
+				frame.requestFocusInWindow();//para que se pueda usar el teclado
 			}
 		});
 		sliderVol.setBounds(548, 76, 24, 162);
@@ -297,6 +302,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 						if(mus!=null) {
 							mus.ajustarTiempo(sliderProgreso.getValue());
 						}
+						frame.requestFocusInWindow();//para que se pueda usar el teclado
 					}
 				});
 				//lissener para que cuando movamos la ruleta estando en el slider se mueva la cancion
@@ -353,6 +359,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 						if(mus!=null) {
 							mus.ajustarVelocidad(Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())));
 						}
+						frame.requestFocusInWindow();//para que se pueda usar el teclado
 					}
 				});
 				selectorVelocidad.addMouseWheelListener(new MouseWheelListener() {
@@ -536,7 +543,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		botonAdelante.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(mus!=null && histMus.size()!=1) {
-					comprobarSePuedenReproducir();
+					//comprobarSePuedenReproducir();
 					System.out.println(indiceArchivoActual);
 
 					if(repetirOAleatorio.getSelectedIndex()!=0) {
@@ -582,7 +589,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		botonAdelante.setBounds(321, 268, 60, 30);
 		frame.getContentPane().add(botonAdelante);
 		
-		//POR HACER
+		
 		//Selecctor que decide que pasa al terminar la reproduccion del archivo actual
 		repetirOAleatorio = new JComboBox(new String[] { "     \ud83d\udd00", "     ⏬", "     \u25BA"});
 		repetirOAleatorio.setToolTipText("Cambia que pasa al terminar la reproduccion");
@@ -619,22 +626,16 @@ public class reproductorMusicaC extends javafx.application.Application{
 					repeticionBoton.setText("🔂");
 					repeticionBoton.setToolTipText("Reproducir una vez");
 					repeticionBoton.setBackground(colorBotonRepe);//para volver al estilo inicial
-				
-		    
-		        	
 		        }
-		    	
-		    	
-		    	
+		        frame.requestFocusInWindow();//para que se pueda usar el teclado
 		    }
 		});
 		
 		
-		
-		//BOTON OBTENMER ARCHIVOS SONIDO SISTEMA
+		//BOTON OBTENER ARCHIVOS SONIDO SISTEMA
 		JButton botonObtenerSonido = new JButton("<html><p>Obtener</p><p> sonidos</p><p> sistema...</p></html>");
 		botonObtenerSonido.setFont(new Font("Tahoma", Font.BOLD, 8));
-		botonObtenerSonido.setToolTipText("Puede tardar bastante, busca archivos de audio en el sistema");
+		botonObtenerSonido.setToolTipText("<html><p>Puede tardar bastante; busca archivos</p><p> de audio en el disco de donde se</p><p>esta ejecutando este programa</p></html>");
 		botonObtenerSonido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//Le preguntamos al usuario y le informamos que va a tardar
@@ -643,6 +644,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        	obtenerTodosFicherosMusicaSistema();
 					comprobarSePuedenReproducir();
 					lisenerFinArchivo();
+					frame.requestFocusInWindow();//para que se pueda usar el teclado
 		        }
 				
 			}
@@ -755,6 +757,12 @@ public class reproductorMusicaC extends javafx.application.Application{
 		            	
 		            }
 		            mus.reproducirInicio();
+		            if(reanudar.isVisible()) {//si esta la cancion actual pausada, le ponemos el boton bien
+		            	reanudar.setVisible(false);
+		            	pausa.setVisible(true);
+		            	
+		            }
+		            
 		            resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
 		            indiceArchivoActual=index;
 		            lisenerFinArchivo();
@@ -1065,13 +1073,16 @@ public class reproductorMusicaC extends javafx.application.Application{
 	public void obtenerTodosFicherosMusicaSistema() {
 		System.getenv("APPDATA");
 		//Path ruta = 
-		String buscar= System.getProperty("user.home");
-		System.out.println(buscar);
+		//String buscar= System.getProperty("user.home");
+		//System.out.println(buscar);
+		Path currentRelativePath = Paths.get("");
+		String buscar = currentRelativePath.toAbsolutePath().toString().substring(0, 3);
+		
 		
 		File root = new File(buscar);
         try {
             boolean recursive = true;
-            String[] ext= new String[] {"mp3","wav"};
+            String[] ext= new String[] {"mp3","wav","aac", "pcm"};
             Collection files = FileUtils.listFiles(root, ext, recursive);
 
             for (Iterator iterator = files.iterator(); iterator.hasNext();) {
@@ -1080,7 +1091,7 @@ public class reproductorMusicaC extends javafx.application.Application{
                     System.out.println(file.getAbsolutePath());
                     histMus.add(new HistoricoSonido(file.getAbsolutePath(), file.getName().substring(0,file.getName().length()-4)));
   
-            }if(mus==null) {
+            }if(mus==null && histMus.size()!=0) {
             	mus= new ReproductorMusica(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
                 mus.reproducirInicio();
                 resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
