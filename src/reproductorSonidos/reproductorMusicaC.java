@@ -2,6 +2,7 @@ package reproductorSonidos;
 
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.media.Media;
 import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
@@ -394,7 +395,11 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        File[] files = chooser.getSelectedFiles();
 		        //SE PUEDEN AÑADIR MAS DE 1 FILE
 		        if(returnVal == JFileChooser.APPROVE_OPTION) {
-		        	
+		        	for(int i=0; i<files.length;i++) {
+		        		histMus.add(new HistoricoSonido(files[i].getAbsolutePath(),getNombreCancion(files[i].getAbsolutePath())));
+		        		
+		        	}
+		        	comprobarSePuedenReproducir();//comprobamos que esten bien los ficheros
 		        	//si ya habia archivo elegido
 		        	if(mus!=null)  {
 		        		/*mus.getMediaPlayer().stop();//paramos la cancion
@@ -404,7 +409,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        		indiceArchivoActual=histMus.size()-1;*/
 		        	
 		        	}else {//si es la primera vez que se elije un archivo
-		        		mus = new ReproductorMusica(files[0].getAbsolutePath(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+		        		mus = new ReproductorMusica(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 		        		HistoricoSonido d= new HistoricoSonido(mus.getPath(), mus.getNombreCancion());
 			        	//histMus.add(d);
 		        		indiceArchivoActual=0;
@@ -413,10 +418,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        	}
 		        	//añadimos esa ruta y nombre de archivo al historico
 		        	
-		        	for(int i=0; i<files.length;i++) {
-		        		histMus.add(new HistoricoSonido(files[i].getAbsolutePath(),getNombreCancion(files[i].getAbsolutePath())));
-		        		
-		        	}
+		        	
 		        	
 		        	
 		        	//Crear un objeto DefaultListModel
@@ -532,6 +534,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		botonAdelante.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(mus!=null && histMus.size()!=1) {
+					comprobarSePuedenReproducir();
 					System.out.println(indiceArchivoActual);
 					
 					if(repetirOAleatorio.getSelectedIndex()!=0) {
@@ -613,6 +616,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		botonObtenerSonido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				obtenerTodosFicherosMusicaSistema();
+				comprobarSePuedenReproducir();
 			}
 		});
 		botonObtenerSonido.setActionCommand("");
@@ -673,7 +677,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 						}); 
 				comprobarRutasFiles.start();
 				
-				
+				/*
 				//DESHABILITADO POR CONSUMIR MUCHOS RECURSOS
 				
 				Timer comprobarSePuedenReproducir = new Timer (5000, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
@@ -682,39 +686,19 @@ public class reproductorMusicaC extends javafx.application.Application{
 					{ 
 
 						//COMPROBAMOS SI LOS ARCHIVOS SE PUEDEN REPRODUCIR
-						ReproductorMusica test = null;
+						Media testM = null;
 						for(int i=0; i<histMus.size();i++) {
 							try {
-								test= new ReproductorMusica(histMus.get(i).getDireccion(),0,1,false);
-								System.out.println("Provando "+i);
-
-								if(test.getMedia()==null) { 
-									histMus.remove(i);  
-								}else {
-									test.getMediaPlayer().getError();
-									test.getMedia().getError();
-								}
-								if(test.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.UNKNOWN) {
-									//histMus.remove(i); 
-
-								}
-								actualizarHistorico();
-								test.close();
-								test=null;
-								// System.gc();
-								// System.runFinalization();
-
+								
+								testM= new Media(histMus.get(i).getDireccion());
+								testM.getError();
+								testM=null;
+								
 							}catch(MediaException  e3) {
 
 								if (e3.getType() == MediaException.Type.MEDIA_UNSUPPORTED) {
 									histMus.remove(i); 
 									System.out.println("Borrado "+i);
-								}
-							}finally {
-								if(test!=null) {
-									try {
-										test.close();
-									}catch(Exception e3) {}
 								}
 							}
 						}
@@ -722,7 +706,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 						}); 
 				comprobarSePuedenReproducir.start();
 				
-				
+				*/
 				
 				
 		
@@ -789,7 +773,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        	
 		        	
 		    		
-		    		
+		        	//lisenerFinArchivo();
 		    		
 		    		
 		        }
@@ -959,6 +943,32 @@ public class reproductorMusicaC extends javafx.application.Application{
 		//System.out.println(pantalla.length());
 		//System.out.println(espacios.length());
 		return pantalla;
+	}
+	
+	
+	public void comprobarSePuedenReproducir() {
+		//COMPROBAMOS SI LOS ARCHIVOS SE PUEDEN REPRODUCIR
+		Media testM = null;
+		for(int i=0; i<histMus.size();i++) {
+			try {
+				
+				testM= new Media(new File(histMus.get(i).getDireccion()).toURI().toString());
+				testM.getError();
+				//testM=null;
+				
+			}catch(MediaException  e3) {
+				System.out.println("Bosdadsarrado "+i);
+				if (e3.getType() == MediaException.Type.MEDIA_UNSUPPORTED) {
+					histMus.remove(i); 
+					System.out.println("Borrado "+i);
+				}
+			}
+			catch (Exception e) {
+				// TODO: handle exception
+			}
+		}
+		actualizarHistorico();
+		
 	}
 	
 	

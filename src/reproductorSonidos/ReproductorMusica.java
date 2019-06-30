@@ -93,7 +93,10 @@ public class ReproductorMusica {
 	
 	
 	public void close() {
+		this.mediaPlayer.stop();
+		this.mediaPlayer.stop();
 		this.mediaPlayer=null;
+		
 		this.duracionArchivo=null;
 		this.media=null;
 		this.path=null;
