@@ -87,6 +87,28 @@ public class ReproductorMusica {
 		
 	}
 	
+	public Media getMedia() {
+		return this.media;
+	}
+	
+	
+	public void close() {
+		this.mediaPlayer=null;
+		this.duracionArchivo=null;
+		this.media=null;
+		this.path=null;
+		try {
+			super.finalize();
+			System.out.println("end");
+		} catch (Throwable e1) {
+			// TODO Bloque catch generado automáticamente
+			e1.printStackTrace();
+		}
+		
+
+		
+	}
+	
 	public void reproducirInicio() {
         this.mediaPlayer.play();
     }

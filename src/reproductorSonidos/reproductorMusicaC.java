@@ -2,6 +2,7 @@ package reproductorSonidos;
 
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -606,7 +607,8 @@ public class reproductorMusicaC extends javafx.application.Application{
 	         }
 	      });
 		
-		JButton botonObtenerSonido = new JButton("Obtener sonidos...");
+		JButton botonObtenerSonido = new JButton("<html><p>Obtener</p><p> sonidos</p><p> sistema...</p></html>");
+		botonObtenerSonido.setFont(new Font("Tahoma", Font.BOLD, 8));
 		botonObtenerSonido.setToolTipText("Puede tardar bastante, busca archivos de audio en el sistema");
 		botonObtenerSonido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -615,7 +617,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		});
 		botonObtenerSonido.setActionCommand("");
 		botonObtenerSonido.setMargin(new Insets(0, 0, 0, 0));
-		botonObtenerSonido.setBounds(411, 77, 110, 18);
+		botonObtenerSonido.setBounds(480, 74, 40, 30);
 		frame.getContentPane().add(botonObtenerSonido);
 		
 		
@@ -661,14 +663,68 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		//COMPROBACION DE DISPONIBILIDAD y duplicados DE ARCHIVOS
-				Timer comprobarRutasFiles = new Timer (1500, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
+				Timer comprobarRutasFiles = new Timer (10000, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
 						{ 
 						    public void actionPerformed(ActionEvent e) 
 						    { 
 						    	comprobarDisponibilidadYDuplicadosFiles();
+						    	
 						    }
 						}); 
 				comprobarRutasFiles.start();
+				
+				
+				//DESHABILITADO POR CONSUMIR MUCHOS RECURSOS
+				
+				Timer comprobarSePuedenReproducir = new Timer (5000, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
+						{ 
+					public void actionPerformed(ActionEvent e) 
+					{ 
+
+						//COMPROBAMOS SI LOS ARCHIVOS SE PUEDEN REPRODUCIR
+						ReproductorMusica test = null;
+						for(int i=0; i<histMus.size();i++) {
+							try {
+								test= new ReproductorMusica(histMus.get(i).getDireccion(),0,1,false);
+								System.out.println("Provando "+i);
+
+								if(test.getMedia()==null) { 
+									histMus.remove(i);  
+								}else {
+									test.getMediaPlayer().getError();
+									test.getMedia().getError();
+								}
+								if(test.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.UNKNOWN) {
+									//histMus.remove(i); 
+
+								}
+								actualizarHistorico();
+								test.close();
+								test=null;
+								// System.gc();
+								// System.runFinalization();
+
+							}catch(MediaException  e3) {
+
+								if (e3.getType() == MediaException.Type.MEDIA_UNSUPPORTED) {
+									histMus.remove(i); 
+									System.out.println("Borrado "+i);
+								}
+							}finally {
+								if(test!=null) {
+									try {
+										test.close();
+									}catch(Exception e3) {}
+								}
+							}
+						}
+					}
+						}); 
+				comprobarSePuedenReproducir.start();
+				
+				
+				
+				
 		
 		//CONTROLADOR RATON SELECCION HISTORICO DE ARCHIVOS
 		historico.addMouseListener(new MouseAdapter() {
@@ -815,7 +871,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 			histMus = new ArrayList<HistoricoSonido>();
 		}
 		
-		frame.setTitle("Reproductor Musica Java v1.6 by Pablo98ad");
+		frame.setTitle("Reproductor Musica Java v1.7 by Pablo98ad");
 		
 	}
 	/**
@@ -880,7 +936,8 @@ public class reproductorMusicaC extends javafx.application.Application{
 		            }
 		        }
 		    }
-				
+		 
+		
 				
 	
 		
