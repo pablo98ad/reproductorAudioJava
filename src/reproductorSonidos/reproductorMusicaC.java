@@ -7,7 +7,8 @@ import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
+import static com.sun.media.jfxmedia.MediaManager.canPlayContentType;
+import static com.sun.media.jfxmediaimpl.MediaUtils.filenameToContentType;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -59,6 +60,7 @@ import java.awt.event.InputMethodEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 
@@ -461,18 +463,18 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		repeticionBoton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if(mus!=null) {
+				if(mus!=null && repetirOAleatorio.getSelectedIndex()!=0 && repetirOAleatorio.getSelectedIndex()!=1) {
 					if(mus.getSeVaRepetir()==false) {
 						mus.setRepeticion(true);
 						repeticion=true;
 						repeticionBoton.setText("\uD83D\uDD04");
-						repeticionBoton.setToolTipText("Reproducir una vez");
+						repeticionBoton.setToolTipText("Reproducir siempre");
 						repeticionBoton.setBackground(new Color(102,255,51));
 					}else {
 						mus.setRepeticion(false);
 						repeticion=false;
 						repeticionBoton.setText("🔂");
-						repeticionBoton.setToolTipText("Reproducir siempre");
+						repeticionBoton.setToolTipText("Reproducir una vez");
 						repeticionBoton.setBackground(colorBotonRepe);//para volver al estilo inicial
 					}
 				}
@@ -510,14 +512,14 @@ public class reproductorMusicaC extends javafx.application.Application{
 			            resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
 			            indiceArchivoActual--;
 			            historico.setSelectedIndex(indiceArchivoActual);
-					
+			            lisenerFinArchivo();
 					}else {
 						mus.cambiarCancion(histMus.get(histMus.size()-1).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 			            mus.reproducirInicio();
 			            resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
 			            indiceArchivoActual=histMus.size()-1;
 			            historico.setSelectedIndex(indiceArchivoActual);
-						
+			            lisenerFinArchivo();
 					}
 				
 				}
@@ -536,45 +538,45 @@ public class reproductorMusicaC extends javafx.application.Application{
 				if(mus!=null && histMus.size()!=1) {
 					comprobarSePuedenReproducir();
 					System.out.println(indiceArchivoActual);
-					
+
 					if(repetirOAleatorio.getSelectedIndex()!=0) {
-					
-					if(indiceArchivoActual!=histMus.size()-1) {
-						if(mus==null) {
-							mus= new ReproductorMusica(histMus.get(indiceArchivoActual+1).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
-				            
-						}else {
-							mus.cambiarCancion(histMus.get(indiceArchivoActual+1).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
-				            
+
+						if(indiceArchivoActual!=histMus.size()-1) {
+							if(mus==null) {
+								mus= new ReproductorMusica(histMus.get(indiceArchivoActual+1).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+
+							}else {
+								mus.cambiarCancion(histMus.get(indiceArchivoActual+1).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+
+							}
+							mus.reproducirInicio();
+							resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
+							indiceArchivoActual++;
+							historico.setSelectedIndex(indiceArchivoActual);
+							lisenerFinArchivo();
+
+						}else {//si se da al siguiente 
+							mus.cambiarCancion(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+							mus.reproducirInicio();
+							resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
+							indiceArchivoActual=0;
+							historico.setSelectedIndex(indiceArchivoActual);
+							lisenerFinArchivo();
 						}
-						mus.reproducirInicio();
-			            resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
-			            indiceArchivoActual++;
-			            historico.setSelectedIndex(indiceArchivoActual);
-			            
-					
-					}else {//si se da al siguiente 
-						mus.cambiarCancion(histMus.get(0).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
-			            mus.reproducirInicio();
-			            resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
-			            indiceArchivoActual=0;
-			            historico.setSelectedIndex(indiceArchivoActual);
-						
-					}
-					
+
 					}else {//si esta puesto aleatorio reproducimos una aleatoria
 						int fileAleatorio= (int)(Math.random()*histMus.size());
-	            		mus.cambiarCancion(histMus.get(fileAleatorio).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
-			            mus.reproducirInicio();
-			            resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
-			            indiceArchivoActual=fileAleatorio;
-			            historico.setSelectedIndex(indiceArchivoActual);
-						
-						
+						mus.cambiarCancion(histMus.get(fileAleatorio).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
+						mus.reproducirInicio();
+						resultado.setText(primerVezTitulo(mus.getNombreCancion())); 
+						indiceArchivoActual=fileAleatorio;
+						historico.setSelectedIndex(indiceArchivoActual);
+						lisenerFinArchivo();
+
 					}
-				
+
 				}
-				
+
 			}
 		});
 		botonAdelante.setBounds(321, 268, 60, 30);
@@ -609,14 +611,40 @@ public class reproductorMusicaC extends javafx.application.Application{
 	            return this;
 	         }
 	      });
+		repetirOAleatorio.addActionListener (new ActionListener () {
+		    public void actionPerformed(ActionEvent e) {
+		        if((repetirOAleatorio.getSelectedIndex()==0 || repetirOAleatorio.getSelectedIndex()==1) && repeticionBoton.getToolTipText().equalsIgnoreCase("Reproducir siempre") ) {
+		        	mus.setRepeticion(false);
+					repeticion=false;
+					repeticionBoton.setText("🔂");
+					repeticionBoton.setToolTipText("Reproducir una vez");
+					repeticionBoton.setBackground(colorBotonRepe);//para volver al estilo inicial
+				
+		    
+		        	
+		        }
+		    	
+		    	
+		    	
+		    }
+		});
 		
+		
+		
+		//BOTON OBTENMER ARCHIVOS SONIDO SISTEMA
 		JButton botonObtenerSonido = new JButton("<html><p>Obtener</p><p> sonidos</p><p> sistema...</p></html>");
 		botonObtenerSonido.setFont(new Font("Tahoma", Font.BOLD, 8));
 		botonObtenerSonido.setToolTipText("Puede tardar bastante, busca archivos de audio en el sistema");
 		botonObtenerSonido.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				obtenerTodosFicherosMusicaSistema();
-				comprobarSePuedenReproducir();
+				//Le preguntamos al usuario y le informamos que va a tardar
+				int confirmed = JOptionPane.showConfirmDialog(null, "Esta operacion puede tardar bastantes minutos ¿Quiere Continuar?","Confirmacion que va a tardar bastante",JOptionPane.YES_NO_OPTION);
+		        if(confirmed == JOptionPane.YES_OPTION){//si dice que si pues vamos
+		        	obtenerTodosFicherosMusicaSistema();
+					comprobarSePuedenReproducir();
+					lisenerFinArchivo();
+		        }
+				
 			}
 		});
 		botonObtenerSonido.setActionCommand("");
@@ -767,7 +795,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        			mus.cambiarCancion(histMus.get(cancionAReproducir).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
 					        mus.reproducirInicio();
 					        resultado.setText(primerVezTitulo(mus.getNombreCancion()));
-				        
+					        lisenerFinArchivo();
 		        	}
 
 		        	
@@ -826,8 +854,8 @@ public class reproductorMusicaC extends javafx.application.Application{
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
                 System.out.println("Saliendo");	
-            	guardarHistorico();
-                   System.exit(0);
+            	guardarHistorico();//guardamos los archivos de audio 
+                   System.exit(0);//salimos
              }
             });
         
@@ -855,7 +883,7 @@ public class reproductorMusicaC extends javafx.application.Application{
 			histMus = new ArrayList<HistoricoSonido>();
 		}
 		
-		frame.setTitle("Reproductor Musica Java v1.7 by Pablo98ad");
+		frame.setTitle("Reproductor Musica Java v1.8 by Pablo98ad");
 		
 	}
 	/**
@@ -866,11 +894,9 @@ public class reproductorMusicaC extends javafx.application.Application{
 		BufferedWriter fw=null;
 		String direccion=System.getenv("APPDATA")+"\\pablo98ad\\reproductorSonidoJava\\historial.json";
 		JSONObject archivo;
-		
-		
 		try {
 			fw=new BufferedWriter(new FileWriter(direccion,false));//abrimos el flujo de escritura diciendole que no sobreescriba lo que hay
-			
+		
 			for (int i=0; i<histMus.size();i++) {
 				try {
 					archivo = new JSONObject(histMus.get(i));
@@ -882,7 +908,6 @@ public class reproductorMusicaC extends javafx.application.Application{
 					e.printStackTrace();
 				}
 			}
-
 		} catch (IOException e) {
 			System.out.printf("Error de Entrada/Salida: %s \n",e.getMessage());
 		}finally {
@@ -897,21 +922,18 @@ public class reproductorMusicaC extends javafx.application.Application{
 	}
 	
 	
+	
 	public void comprobarDisponibilidadYDuplicadosFiles() {
 		File f;
-		
 		//COMPROBAR QUE EXISTEN
 		for(int i=0; i<histMus.size();i++) {
 			f= new File(histMus.get(i).getDireccion());
 			if(!f.exists()) {
 				histMus.remove(i);
-				
 			}
-			
-			//System.out.println(todos+" de "+histMus.size());
 		}
 		
-		//ELIMINAR DUPLICADOS
+		//ELIMINAR DUPLICADOS (ARCHIVOS CON LA MISMA RUTA)
 		 for(int i=histMus.size()-1; i>0; i--) {
 		        for(int j=i-1; j>=0; j--) {
 		            if(histMus.get(i).equals(histMus.get(j))) {
@@ -921,27 +943,19 @@ public class reproductorMusicaC extends javafx.application.Application{
 		        }
 		    }
 		 
-		
-				
-	
-		
-		
 		actualizarHistorico();
 		historico.setSelectedIndex(indiceArchivoActual);//para que no se deseleccione la cancion reproducida
 	}
 		
+	
 	private String primerVezTitulo(String t) {
-		//al cambiar una cancion o el primer mensaje quie aparece en el texto resultado es tratado por este metodo
+		//al cambiar una cancion o el primer mensaje que aparece en el texto resultado es tratado por este metodo
 		//para poder hacer la marquesina en direccion derecha
 		String espacios="                                                                                                                            ";
 		t="\u200e"+t+"\u200f";
 		String pantalla= espacios.substring(0,(espacios.length()/2)-t.length())+t;
-		//System.out.println(pantalla.length());
-		
 		pantalla=pantalla+espacios.substring(0, espacios.length()-pantalla.length());
-		
-		//System.out.println(pantalla.length());
-		//System.out.println(espacios.length());
+
 		return pantalla;
 	}
 	
@@ -949,19 +963,33 @@ public class reproductorMusicaC extends javafx.application.Application{
 	public void comprobarSePuedenReproducir() {
 		//COMPROBAMOS SI LOS ARCHIVOS SE PUEDEN REPRODUCIR
 		Media testM = null;
+		//MediaPlayer testMP=null;
 		for(int i=0; i<histMus.size();i++) {
 			try {
 				
 				testM= new Media(new File(histMus.get(i).getDireccion()).toURI().toString());
 				testM.getError();
-				//testM=null;
+				if(!canPlayContentType(filenameToContentType(histMus.get(i).getDireccion()))) {
+					System.out.println("Borrado "+i);
+					histMus.remove(i); 
+				}else {
+					System.out.println("Se puede reproducir "+i);
+				}
 				
+				
+				
+				//testMP=  new MediaPlayer(testM);
+				//testMP.play();
+				//testMP.getError();
+				//testMP.setVolume(0);
+				//Thread.sleep(100);
+				//testMP.stop();
+				//System.out.println("Comprobado "+i);
 			}catch(MediaException  e3) {
-				System.out.println("Bosdadsarrado "+i);
-				if (e3.getType() == MediaException.Type.MEDIA_UNSUPPORTED) {
+				//if (e3.getType() == MediaException.Type.MEDIA_UNSUPPORTED) {
 					histMus.remove(i); 
 					System.out.println("Borrado "+i);
-				}
+				//}
 			}
 			catch (Exception e) {
 				// TODO: handle exception
@@ -977,6 +1005,9 @@ public class reproductorMusicaC extends javafx.application.Application{
 		//por ejempo "C:/Pablo/Escritorio/hola.mp3" cojeria solo "hola"
 		return n;
 	}
+	
+	
+	
 	
 	
 	public ArrayList<HistoricoSonido> obtenerHistoricoMusica(){
@@ -1077,11 +1108,11 @@ public class reproductorMusicaC extends javafx.application.Application{
         mus.getMediaPlayer().setOnEndOfMedia(new Runnable() {
             @Override
             public void run() {
-            	
+            	//si selecciono que se va a reproducir la sigfuiente cancion
             	if(repetirOAleatorio.getSelectedIndex()==1) {
             		botonAdelante.doClick();
             		System.out.println("pongo siguiente solo");
-            		
+            		//si selecciono que se va a reproducir aleatoriamente
             	}else if(repetirOAleatorio.getSelectedIndex()==0) {
             		int fileAleatorio= (int)(Math.random()*histMus.size());
             		mus.cambiarCancion(histMus.get(fileAleatorio).getDireccion(),sliderVol.getValue(), Double.parseDouble(selectorVelocidad.getSelectedItem().toString().substring(1, selectorVelocidad.getSelectedItem().toString().length())),repeticion);
@@ -1093,7 +1124,7 @@ public class reproductorMusicaC extends javafx.application.Application{
             		
             		
             	}
-            	lisenerFinArchivo();
+            	lisenerFinArchivo();//volvemos a esperar el fin de la cancion
             	
                 
                 System.out.println("fin");
