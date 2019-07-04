@@ -67,6 +67,7 @@ import javax.swing.JScrollPane;
 
 import java.awt.List;
 import java.awt.ScrollPane;
+import java.awt.Toolkit;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.MouseWheelEvent;
@@ -663,23 +664,25 @@ public class reproductorMusicaC extends javafx.application.Application{
 		
 		
 		Timer tiempoYBarraProgreso = new Timer (20, new ActionListener () //hacemos un hilo para que se actualize la duracion de la musica
-		{ 
-		    public void actionPerformed(ActionEvent e) 
-		    { 
-		    	//System.out.println(mus.getMediaPlayer().getStatus().);
-		    	if(mus!=null && mus.getMediaPlayer()!=null) {
-			    	if(mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.PLAYING || mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.READY && mus.getMediaPlayer()!=null) {
-				    	sliderProgreso.setValue(mus.obtenerProgreso());
-				    //	System.out.println(mus.obtenerProgreso()+"   "+sliderProgreso.getValue());
-		            	//sliderProgreso.setValue(sliderProgreso.getValue());
-		            	tiempo.setText(mus.getProgreso());
-		            	try {
-		            		mus.getMediaPlayer().play();
-		            	}catch(Exception e1) {}
-			    	}
-		    	}
-		     } 
-		}); 
+				{ 
+			public void actionPerformed(ActionEvent e) 
+			{ 
+				try {
+				//System.out.println(mus.getMediaPlayer().getStatus().);
+				if(mus!=null && mus.getMediaPlayer()!=null) {
+					if(mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.PLAYING || mus.getMediaPlayer().getStatus()==javafx.scene.media.MediaPlayer.Status.READY && mus.getMediaPlayer()!=null) {
+						sliderProgreso.setValue(mus.obtenerProgreso());
+						//	System.out.println(mus.obtenerProgreso()+"   "+sliderProgreso.getValue());
+						//sliderProgreso.setValue(sliderProgreso.getValue());
+						tiempo.setText(mus.getProgreso());
+
+						mus.getMediaPlayer().play();
+					}
+				}
+			}catch(Exception e1) {}
+
+			} 
+				}); 
 		tiempoYBarraProgreso.start();
 		
 		//EFECTO MARQUESINA DEL TITULOO DEL ARCHIVO, VARIABLE RESULTADO
@@ -891,7 +894,8 @@ public class reproductorMusicaC extends javafx.application.Application{
 			histMus = new ArrayList<HistoricoSonido>();
 		}
 		
-		frame.setTitle("Reproductor Musica Java v1.8 by Pablo98ad");
+		frame.setTitle("Reproductor Musica Java v1.81 by Pablo98ad");
+		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/iconoRMJ.png")));
 		
 	}
 	/**
@@ -1079,11 +1083,11 @@ public class reproductorMusicaC extends javafx.application.Application{
 		String buscar = currentRelativePath.toAbsolutePath().toString().substring(0, 3);
 		
 		
-		File root = new File(buscar);
+		File f = new File(buscar);
         try {
-            boolean recursive = true;
+            boolean recursivo = true;
             String[] ext= new String[] {"mp3","wav","aac", "pcm"};
-            Collection files = FileUtils.listFiles(root, ext, recursive);
+            Collection files = FileUtils.listFiles(f, ext, recursivo);
 
             for (Iterator iterator = files.iterator(); iterator.hasNext();) {
                 File file = (File) iterator.next();

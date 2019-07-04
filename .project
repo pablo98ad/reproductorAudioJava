@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/iconoRMJ.png</name>
+			<type>1</type>
+			<location>C:/Users/Pablo/eclipse-workspace/reproductorMusicaJava/src/iconoRMJ.png</location>
+		</link>
+	</linkedResources>
 </projectDescription>
